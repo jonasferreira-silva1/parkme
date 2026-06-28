@@ -1,0 +1,215 @@
+// =============================================================
+// SCHEMA PRISMA — ParkMe
+// Define todas as tabelas e relacionamentos do banco de dados.
+// Para aplicar: npx prisma migrate dev
+// Para visualizar: npx prisma studio
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// ENUMS — Valores fixos usados nas entidades
+// -------------------------------------------------------------
+
+/// Papéis possíveis de um usuário no sistema
+enum Role {
+  DRIVER   // Motorista comum
+  OPERATOR // Operador do estacionamento
+  ADMIN    // Administrador geral
+}
+
+/// Estado de uma vaga no estacionamento
+enum SpotStatus {
+  FREE      // Vaga disponível
+  OCCUPIED  // Vaga ocupada por um veículo
+  RESERVED  // Vaga reservada (Sprint futuro)
+}
+
+/// Tipo/categoria da vaga
+enum SpotType {
+  STANDARD // Vaga padrão
+  DISABLED // Vaga para pessoas com deficiência (PCD)
+  VIP      // Vaga premium
+}
+
+/// Estado de uma sessão de estacionamento
+enum SessionStatus {
+  ACTIVE    // Carro ainda está estacionado
+  COMPLETED // Sessão encerrada com pagamento
+  CANCELLED // Sessão cancelada
+}
+
+/// Estado do pagamento
+enum PaymentStatus {
+  PENDING  // Aguardando confirmação
+  APPROVED // Pagamento aprovado pelo gateway
+  FAILED   // Pagamento recusado ou com erro
+}
+
+/// Método de pagamento utilizado
+enum PaymentMethod {
+  PIX    // Pagamento via Pix
+  CREDIT // Cartão de crédito
+  DEBIT  // Cartão de débito
+}
+
+/// Tipo da notificação enviada ao usuário
+enum NotificationType {
+  PARKED        // Confirmação de que o carro foi estacionado
+  EXPIRING_SOON // Aviso 15 minutos antes de vencer
+  REMINDER      // Lembrete genérico
+}
+
+// -------------------------------------------------------------
+// USER — Usuário do sistema (motorista, operador ou admin)
+// -------------------------------------------------------------
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   // Senha armazenada como hash bcrypt
+  phone        String?  // Telefone opcional para notificações
+  role         Role     @default(DRIVER)
+  pcd          Boolean  @default(false) // Pessoa com deficiência
+  pushToken    String?  // Token Expo para push notifications
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relacionamentos
+  vehicles      Vehicle[]
+  notifications Notification[]
+
+  @@map("users") // Nome da tabela no banco
+}
+
+// -------------------------------------------------------------
+// VEHICLE — Veículo cadastrado vinculado a um usuário
+// -------------------------------------------------------------
+model Vehicle {
+  id        String   @id @default(cuid())
+  userId    String
+  plate     String   @unique // Placa do veículo (ex: ABC1D23)
+  brand     String   // Marca (ex: Toyota)
+  model     String   // Modelo (ex: Corolla)
+  color     String   // Cor (ex: Prata)
+  createdAt DateTime @default(now())
+
+  // Relacionamentos
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@map("vehicles")
+}
+
+// -------------------------------------------------------------
+// PARKING_LOT — Estacionamento (prédio com andares e vagas)
+// -------------------------------------------------------------
+model ParkingLot {
+  id             String   @id @default(cuid())
+  name           String
+  address        String
+  floors         Int      // Número de andares
+  totalSpots     Int      // Total de vagas
+  pricePerHour   Decimal  @db.Decimal(10, 2) // Preço por hora em R$
+  dynamicPricing Boolean  @default(true)     // Habilita preço dinâmico (+20% se > 80% ocupado)
+  createdAt      DateTime @default(now())
+
+  // Relacionamentos
+  spots Spot[]
+
+  @@map("parking_lots")
+}
+
+// -------------------------------------------------------------
+// SPOT — Vaga individual dentro de um estacionamento
+// -------------------------------------------------------------
+model Spot {
+  id       String     @id @default(cuid())
+  lotId    String
+  floor    Int        // Andar onde a vaga está (1, 2, 3...)
+  sector   String     // Setor (A, B, C...)
+  number   Int        // Número da vaga dentro do setor
+  status   SpotStatus @default(FREE)
+  type     SpotType   @default(STANDARD)
+  // Coordenadas para o mapa SVG (posição no grid)
+  coordX   Int        @default(0)
+  coordY   Int        @default(0)
+
+  // Relacionamentos
+  lot      ParkingLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  // Índice para buscas rápidas por status e tipo
+  @@index([lotId, status, type])
+  @@map("spots")
+}
+
+// -------------------------------------------------------------
+// SESSION — Registro de uso de uma vaga (entrada → saída)
+// -------------------------------------------------------------
+model Session {
+  id           String        @id @default(cuid())
+  vehicleId    String
+  spotId       String
+  entryAt      DateTime      @default(now()) // Horário de entrada
+  exitAt       DateTime?     // Horário de saída (null enquanto ativo)
+  totalMinutes Int?          // Duração total em minutos
+  totalAmount  Decimal?      @db.Decimal(10, 2) // Valor cobrado em R$
+  status       SessionStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now())
+
+  // Relacionamentos
+  vehicle       Vehicle        @relation(fields: [vehicleId], references: [id])
+  spot          Spot           @relation(fields: [spotId], references: [id])
+  payment       Payment?
+  notifications Notification[]
+
+  @@map("sessions")
+}
+
+// -------------------------------------------------------------
+// PAYMENT — Registro de pagamento via MercadoPago
+// -------------------------------------------------------------
+model Payment {
+  id          String        @id @default(cuid())
+  sessionId   String        @unique // Uma sessão tem no máximo um pagamento
+  amount      Decimal       @db.Decimal(10, 2)
+  method      PaymentMethod
+  status      PaymentStatus @default(PENDING)
+  mpPaymentId String?       // ID do pagamento no MercadoPago
+  pixQrCode   String?       // QR Code Pix em base64 (se método for PIX)
+  pixCopyPaste String?      // Código copia-e-cola do Pix
+  paidAt      DateTime?     // Quando foi confirmado o pagamento
+  createdAt   DateTime      @default(now())
+
+  // Relacionamentos
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@map("payments")
+}
+
+// -------------------------------------------------------------
+// NOTIFICATION — Histórico de notificações push enviadas
+// -------------------------------------------------------------
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  sessionId String?
+  type      NotificationType
+  message   String           // Conteúdo da notificação
+  sentAt    DateTime         @default(now())
+  readAt    DateTime?        // null = não lida
+
+  // Relacionamentos
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session? @relation(fields: [sessionId], references: [id])
+
+  @@map("notifications")
+}

@@ -1,0 +1,71 @@
+# =============================================================
+# DOCKER COMPOSE — ParkMe
+# Sobe todos os serviços necessários para desenvolvimento local.
+# Use: docker-compose up -d
+# =============================================================
+
+version: '3.9'
+
+services:
+
+  # -----------------------------------------------------------
+  # PostgreSQL — Banco de dados principal
+  # -----------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: parkme_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: parkme
+      POSTGRES_PASSWORD: parkme123
+      POSTGRES_DB: parkme_db
+    ports:
+      - "5432:5432"    # Porta local:porta do container
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persiste dados entre reinicializações
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parkme -d parkme_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------------------------------------
+  # Redis — Cache de sessões e filas BullMQ
+  # -----------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: parkme_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data  # Persiste filas entre reinicializações
+    command: redis-server --appendonly yes  # Habilita persistência
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -----------------------------------------------------------
+  # Redis Commander — Interface visual para inspecionar o Redis
+  # Acesse em: http://localhost:8081
+  # -----------------------------------------------------------
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: parkme_redis_ui
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: "local:redis:6379"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+
+# -----------------------------------------------------------
+# Volumes nomeados — dados persistem mesmo após "docker-compose down"
+# Para apagar tudo: docker-compose down -v
+# -----------------------------------------------------------
+volumes:
+  postgres_data:
+  redis_data:
