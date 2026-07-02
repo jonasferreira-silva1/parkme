@@ -8,7 +8,6 @@ import {
   TouchableOpacity, Alert, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
-import api from '../../services/api';
 import { useSession } from '../../hooks/useSession';
 import { SpotCard } from '../../components/SpotCard';
 import { Timer } from '../../components/Timer';
@@ -27,6 +26,9 @@ export default function MyCarScreen() {
         <Text style={styles.semSessaoSub}>
           Ao entrar no estacionamento e registrar sua entrada, você verá as informações da sua vaga aqui.
         </Text>
+        <TouchableOpacity style={styles.btnCheckIn} onPress={() => router.push('/(tabs)/check-in')}>
+          <Text style={styles.btnCheckInTexto}>🅿️ Registrar entrada</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.btnVerMapa} onPress={() => router.push('/(tabs)')}>
           <Text style={styles.btnVerMapaTexto}>Ver mapa de vagas</Text>
         </TouchableOpacity>
@@ -34,11 +36,11 @@ export default function MyCarScreen() {
     );
   }
 
-  // Fluxo de saída: registra saída → cria pagamento → libera vaga
+  // Fluxo de saída: registra saída → redireciona para tela de pagamento
   const handlePagarESair = async () => {
     Alert.alert(
       '💳 Pagar e sair',
-      `Valor estimado: R$ ${valorEstimado.toFixed(2)}\n\nDeseja confirmar o pagamento?`,
+      `Valor estimado: R$ ${valorEstimado.toFixed(2)}\n\nDeseja registrar a saída agora?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -46,19 +48,19 @@ export default function MyCarScreen() {
           onPress: async () => {
             setPagando(true);
             try {
-              // 1. Registra saída e calcula o valor final
+              // Registra a saída e obtém o valor final calculado
               const saida = await registrarSaida();
 
-              // 2. Cria o pagamento PIX
-              const pagamento = await api.post(`/payments/${saida.id}`, { method: 'PIX' });
-
-              Alert.alert(
-                '✅ Pagamento gerado!',
-                `Valor: R$ ${saida.totalAmount.toFixed(2)}\n\nUse o código Pix para pagar.\nSua vaga será liberada após confirmação.`,
-                [{ text: 'Ok' }],
-              );
+              // Redireciona para a tela de pagamento passando os dados necessários
+              router.push({
+                pathname: '/payment',
+                params: {
+                  sessionId: saida.id,
+                  amount:    String(saida.totalAmount),
+                },
+              });
             } catch (e: any) {
-              Alert.alert('Erro', e.response?.data?.message ?? 'Erro ao processar pagamento');
+              Alert.alert('Erro', e.response?.data?.message ?? 'Erro ao registrar saída');
             } finally {
               setPagando(false);
             }
@@ -148,6 +150,14 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
   },
   btnVerMapaTexto: { color: '#fff', fontWeight: '700', fontSize: FontSize.base },
+
+  // Botão de check-in
+  btnCheckIn: {
+    backgroundColor: Colors.green, borderRadius: Radius.md,
+    paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  btnCheckInTexto: { color: '#fff', fontWeight: '700', fontSize: FontSize.base },
 
   // Timer
   timerCard: {

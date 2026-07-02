@@ -64,6 +64,15 @@ export default function RootLayout() {
             headerShown:   true,
           }}
         />
+
+        {/* Tela de pagamento — acessada após registrar saída */}
+        <Stack.Screen
+          name="payment"
+          options={{
+            title:       '💳 Pagamento',
+            headerShown: true,
+          }}
+        />
       </Stack>
     </>
   );

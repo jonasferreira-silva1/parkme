@@ -76,6 +76,24 @@ export default function TabsLayout() {
           headerTitle: 'Meu Perfil',
         }}
       />
+
+      {/* Telas auxiliares — sem tab visível na barra inferior */}
+      <Tabs.Screen
+        name="add-vehicle"
+        options={{
+          title:          'Cadastrar Veículo',
+          headerTitle:    '🚗 Cadastrar veículo',
+          href:           null, // Esconde da barra de tabs
+        }}
+      />
+      <Tabs.Screen
+        name="check-in"
+        options={{
+          title:       'Registrar Entrada',
+          headerTitle: '🅿️ Registrar entrada',
+          href:        null, // Esconde da barra de tabs
+        }}
+      />
     </Tabs>
   );
 }

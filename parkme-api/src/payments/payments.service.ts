@@ -15,6 +15,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { SpotStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ParkingGateway } from '../gateways/parking.gateway';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Injectable()
@@ -24,6 +25,8 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    // Gateway para notificar em tempo real quando a vaga for liberada
+    private readonly gateway: ParkingGateway,
   ) {}
 
   // -----------------------------------------------------------
@@ -156,7 +159,15 @@ export class PaymentsService {
     // Busca o pagamento pelo ID do MercadoPago
     const pagamento = await this.prisma.payment.findFirst({
       where: { mpPaymentId },
-      include: { session: { include: { spot: true } } },
+      include: {
+        session: {
+          include: {
+            spot: {
+              select: { id: true, lotId: true, floor: true, sector: true, number: true },
+            },
+          },
+        },
+      },
     });
 
     if (!pagamento) {
@@ -184,6 +195,14 @@ export class PaymentsService {
         });
       });
 
+      // Notifica todos os clientes do estacionamento que a vaga foi liberada
+      this.gateway.emitirVagaLivre(pagamento.session.spot.lotId, {
+        spotId: pagamento.session.spotId,
+        floor:  pagamento.session.spot.floor,
+        sector: pagamento.session.spot.sector,
+        number: pagamento.session.spot.number,
+      });
+
       this.logger.log(`✅ Pagamento aprovado! Vaga ${pagamento.session.spotId} liberada`);
     }
 
@@ -197,7 +216,15 @@ export class PaymentsService {
   async confirmarPagamentoManual(paymentId: string) {
     const pagamento = await this.prisma.payment.findUnique({
       where: { id: paymentId },
-      include: { session: { include: { spot: true } } },
+      include: {
+        session: {
+          include: {
+            spot: {
+              select: { id: true, lotId: true, floor: true, sector: true, number: true },
+            },
+          },
+        },
+      },
     });
 
     if (!pagamento) throw new NotFoundException('Pagamento não encontrado');
@@ -212,6 +239,14 @@ export class PaymentsService {
         where: { id: pagamento.session.spotId },
         data: { status: SpotStatus.FREE },
       });
+    });
+
+    // Notifica em tempo real que a vaga foi liberada
+    this.gateway.emitirVagaLivre(pagamento.session.spot.lotId, {
+      spotId: pagamento.session.spotId,
+      floor:  pagamento.session.spot.floor,
+      sector: pagamento.session.spot.sector,
+      number: pagamento.session.spot.number,
     });
 
     this.logger.log(`✅ [DEV] Pagamento ${paymentId} confirmado manualmente`);

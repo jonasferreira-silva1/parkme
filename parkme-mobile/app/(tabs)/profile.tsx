@@ -99,7 +99,7 @@ export default function ProfileScreen() {
           <Text style={styles.secaoTitulo}>🚙 Meus veículos</Text>
           <TouchableOpacity
             style={styles.btnAdicionar}
-            onPress={() => Alert.alert('Em breve', 'Cadastro de veículos via formulário')}
+            onPress={() => router.push('/(tabs)/add-vehicle')}
           >
             <Text style={styles.btnAdicionarTexto}>+ Adicionar</Text>
           </TouchableOpacity>

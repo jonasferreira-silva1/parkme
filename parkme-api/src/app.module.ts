@@ -8,14 +8,15 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 // Módulos internos da aplicação
-import { PrismaModule }    from './prisma/prisma.module';
-import { AuthModule }      from './auth/auth.module';
-import { SpotsModule }     from './spots/spots.module';
-import { SessionsModule }  from './sessions/sessions.module';
-import { PaymentsModule }  from './payments/payments.module';
-import { VehiclesModule }  from './vehicles/vehicles.module';
-import { AnalyticsModule } from './analytics/analytics.module';
-import { GatewaysModule }  from './gateways/gateways.module';
+import { PrismaModule }         from './prisma/prisma.module';
+import { AuthModule }           from './auth/auth.module';
+import { SpotsModule }          from './spots/spots.module';
+import { SessionsModule }       from './sessions/sessions.module';
+import { PaymentsModule }       from './payments/payments.module';
+import { VehiclesModule }       from './vehicles/vehicles.module';
+import { AnalyticsModule }      from './analytics/analytics.module';
+import { GatewaysModule }       from './gateways/gateways.module';
+import { NotificationsModule }  from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { GatewaysModule }  from './gateways/gateways.module';
     VehiclesModule,
     AnalyticsModule,
     GatewaysModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

@@ -13,6 +13,7 @@ import {
 import { SpotStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SpotsService } from '../spots/spots.service';
+import { ParkingGateway } from '../gateways/parking.gateway';
 import { EntryDto } from './dto/entry.dto';
 import { calcularTarifa, calcularMinutos } from './fare.utils';
 
@@ -23,6 +24,8 @@ export class SessionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly spotsService: SpotsService,
+    // Gateway injetado para emitir eventos WebSocket em tempo real
+    private readonly gateway: ParkingGateway,
   ) {}
 
   // -----------------------------------------------------------
@@ -87,6 +90,14 @@ export class SessionsService {
     this.logger.log(
       `Entrada: veículo ${veiculo.plate} → vaga ${vaga.sector}${vaga.number} (andar ${vaga.floor})`,
     );
+
+    // Notifica todos os clientes do estacionamento que a vaga foi ocupada
+    this.gateway.emitirVagaOcupada(dto.lotId, {
+      spotId:  vaga.id,
+      floor:   vaga.floor,
+      sector:  vaga.sector,
+      number:  vaga.number,
+    });
 
     return sessao;
   }

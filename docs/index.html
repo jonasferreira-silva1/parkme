@@ -1380,7 +1380,7 @@
 │  └──────────┘ └──────────┘ └──────────┘ └──────────┘            │
 │  ┌──────────┐ ┌──────────┐ ┌──────────────────────┐             │
 │  │Notificat.│ │Analytics │ │  Socket.io Gateway   │             │
-│  │/notifs   │ │/analytic.│ │  ws://api:3000       │             │
+│  │/notifs   │ │/analytic.│ │  ws://api:3000/park. │             │
 │  └────┬─────┘ └──────────┘ └──────────────────────┘             │
 └───────┼──────────────────────────────────────────────────────────┘
         │
@@ -1579,6 +1579,7 @@
         <button class="tab-btn" onclick="switchTab('payments')">💳 Pagamentos</button>
         <button class="tab-btn" onclick="switchTab('vehicles')">🚙 Veículos</button>
         <button class="tab-btn" onclick="switchTab('analytics')">📊 Analytics</button>
+        <button class="tab-btn" onclick="switchTab('notifications')">🔔 Notificações</button>
       </div>
 
       <!-- TAB: Auth -->
@@ -1722,7 +1723,12 @@
           <div class="endpoint-row">
             <span class="method method-post">POST</span>
             <span class="endpoint-path">/payments/webhook</span>
-            <span class="endpoint-desc">Webhook de confirmação MercadoPago</span>
+            <span class="endpoint-desc">Webhook de confirmação MercadoPago (sem JWT)</span>
+          </div>
+          <div class="endpoint-row">
+            <span class="method method-post">POST</span>
+            <span class="endpoint-path">/payments/:id/confirm-dev</span>
+            <span class="endpoint-desc">[DEV] Confirmar pagamento manualmente sem webhook</span>
           </div>
         </div>
         <div class="code-wrapper mt-4">
@@ -1745,6 +1751,46 @@
   <span class="str">"amount"</span>: <span class="num">18.50</span>,
   <span class="str">"pixQrCode"</span>: <span class="str">"00020126..."</span>,
   <span class="str">"pixCopyPaste"</span>: <span class="str">"00020126580014br.gov.bcb..."</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- TAB: Notificações -->
+      <div class="tab-panel" id="tab-notifications">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="endpoint-row">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-path">/notifications</span>
+            <span class="endpoint-desc">Listar notificações do usuário (paginado)</span>
+          </div>
+          <div class="endpoint-row">
+            <span class="method method-patch">PATCH</span>
+            <span class="endpoint-path">/notifications/read-all</span>
+            <span class="endpoint-desc">Marcar todas as notificações como lidas</span>
+          </div>
+          <div class="endpoint-row">
+            <span class="method method-patch">PATCH</span>
+            <span class="endpoint-path">/notifications/:id/read</span>
+            <span class="endpoint-desc">Marcar uma notificação como lida</span>
+          </div>
+        </div>
+        <div class="code-wrapper mt-4">
+          <div class="code-header">
+            <span class="code-lang">📤 GET /notifications — Response</span>
+            <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+          </div>
+          <pre><code>{
+  <span class="str">"dados"</span>: [
+    {
+      <span class="str">"id"</span>: <span class="str">"notif_abc"</span>,
+      <span class="str">"type"</span>: <span class="str">"EXPIRING_SOON"</span>,
+      <span class="str">"message"</span>: <span class="str">"Sua sessão vence em 15 minutos"</span>,
+      <span class="str">"sentAt"</span>: <span class="str">"2025-07-01T14:30:00Z"</span>,
+      <span class="str">"readAt"</span>: <span class="kw">null</span>
+    }
+  ],
+  <span class="str">"paginacao"</span>: { <span class="str">"total"</span>: <span class="num">5</span>, <span class="str">"pagina"</span>: <span class="num">1</span>, <span class="str">"totalPaginas"</span>: <span class="num">1</span> },
+  <span class="str">"naoLidas"</span>: <span class="num">2</span>  <span class="cmt">// badge da aba</span>
 }</code></pre>
         </div>
       </div>
@@ -1826,7 +1872,7 @@
           <div class="ws-icon">🅿️</div>
           <div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span class="font-mono font-bold" style="color:#a78bfa">spot_occupied</span>
+              <span class="font-mono font-bold" style="color:#a78bfa">vaga_ocupada</span>
               <span class="badge badge-purple">Server → Client</span>
             </div>
             <div class="text-sm text-muted" style="margin-bottom:8px">Emitido quando uma vaga muda de FREE para OCCUPIED. Todos os clientes na room do estacionamento recebem.</div>
@@ -1839,7 +1885,7 @@
           <div class="ws-icon">✅</div>
           <div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span class="font-mono font-bold" style="color:#34d399">spot_free</span>
+              <span class="font-mono font-bold" style="color:#34d399">vaga_livre</span>
               <span class="badge badge-green">Server → Client</span>
             </div>
             <div class="text-sm text-muted" style="margin-bottom:8px">Emitido após confirmação de pagamento. A vaga volta a ficar disponível no mapa.</div>
@@ -1852,10 +1898,10 @@
           <div class="ws-icon">⏰</div>
           <div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span class="font-mono font-bold" style="color:#fbbf24">session_expiring</span>
+              <span class="font-mono font-bold" style="color:#fbbf24">sessao_expirando</span>
               <span class="badge badge-yellow">Server → Client (privado)</span>
             </div>
-            <div class="text-sm text-muted" style="margin-bottom:8px">Enviado 15 minutos antes de completar o tempo pago. Somente para o motorista da sessão.</div>
+            <div class="text-sm text-muted" style="margin-bottom:8px">Enviado 15 minutos antes de completar o tempo pago. Somente para o motorista da sessão via room <span class="inline-code" style="font-size:0.75em">user_{userId}</span>.</div>
             <div class="code-wrapper" style="margin:0">
               <pre style="padding:10px 14px;font-size:0.78rem"><code>{ <span class="str">"sessionId"</span>: <span class="str">"ses_001"</span>, <span class="str">"minutesLeft"</span>: <span class="num">15</span>, <span class="str">"totalAmount"</span>: <span class="num">18.50</span> }</code></pre>
             </div>
@@ -1865,12 +1911,12 @@
           <div class="ws-icon">📊</div>
           <div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-              <span class="font-mono font-bold" style="color:#60a5fa">lot_occupancy</span>
+              <span class="font-mono font-bold" style="color:#60a5fa">ocupacao_geral</span>
               <span class="badge badge-blue">Server → Client (broadcast)</span>
             </div>
             <div class="text-sm text-muted" style="margin-bottom:8px">Broadcast a cada 30 segundos com o percentual de ocupação do estacionamento.</div>
             <div class="code-wrapper" style="margin:0">
-              <pre style="padding:10px 14px;font-size:0.78rem"><code>{ <span class="str">"lotId"</span>: <span class="str">"lot_001"</span>, <span class="str">"total"</span>: <span class="num">120</span>, <span class="str">"occupied"</span>: <span class="num">97</span>, <span class="str">"percentage"</span>: <span class="num">80.8</span> }</code></pre>
+              <pre style="padding:10px 14px;font-size:0.78rem"><code>{ <span class="str">"total"</span>: <span class="num">120</span>, <span class="str">"ocupadas"</span>: <span class="num">97</span>, <span class="str">"percentual"</span>: <span class="num">80.8</span> }</code></pre>
             </div>
           </div>
         </div>
@@ -1895,11 +1941,11 @@
     });
 
     <span class="cmt">// Entra na room do estacionamento</span>
-    socket.<span class="fn">emit</span>(<span class="str">'join_lot'</span>, { lotId });
+    socket.<span class="fn">emit</span>(<span class="str">'entrar_estacionamento'</span>, { lotId });
 
     <span class="cmt">// Atualiza o mapa SVG quando uma vaga muda</span>
-    socket.<span class="fn">on</span>(<span class="str">'spot_occupied'</span>, (data) => <span class="fn">updateSpot</span>(data.spotId, <span class="str">'OCCUPIED'</span>));
-    socket.<span class="fn">on</span>(<span class="str">'spot_free'</span>,     (data) => <span class="fn">updateSpot</span>(data.spotId, <span class="str">'FREE'</span>));
+    socket.<span class="fn">on</span>(<span class="str">'vaga_ocupada'</span>, (data) => <span class="fn">atualizarVaga</span>(data.spotId, <span class="str">'OCCUPIED'</span>));
+    socket.<span class="fn">on</span>(<span class="str">'vaga_livre'</span>,   (data) => <span class="fn">atualizarVaga</span>(data.spotId, <span class="str">'FREE'</span>));
 
     <span class="kw">return</span> () => socket.<span class="fn">disconnect</span>();
   }, [lotId]);
@@ -2007,10 +2053,32 @@
             <span style="font-size:1.4rem">👤</span>
             <span class="card-title" style="margin:0">Perfil</span>
           </div>
-          <div class="card-desc">Dados do usuário editáveis. Gerenciamento de múltiplos veículos. Configuração de preferências de notificação.</div>
+          <div class="card-desc">Dados do usuário. Gerenciamento de múltiplos veículos com formulário de cadastro completo (placa, marca, modelo, cor). Logout com limpeza de tokens.</div>
           <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
             <span class="badge badge-blue">CRUD</span>
             <span class="badge badge-purple">Multi-veículo</span>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--accent-green)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:1.4rem">🚗</span>
+            <span class="card-title" style="margin:0">Check-in</span>
+          </div>
+          <div class="card-desc">Seleciona o veículo que está entrando (radio list). Confirma a entrada via API. Vaga atribuída automaticamente. Redireciona para Meu Carro com a sessão já ativa.</div>
+          <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+            <span class="badge badge-green">Auto-assign</span>
+            <span class="badge badge-blue">PCD priority</span>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--accent-yellow)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:1.4rem">➕</span>
+            <span class="card-title" style="margin:0">Cadastrar Veículo</span>
+          </div>
+          <div class="card-desc">Formulário com chips de marcas sugeridas, formatação automática da placa e preview visual estilo placa brasileira. Validação por campo em tempo real.</div>
+          <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+            <span class="badge badge-yellow">Validação</span>
+            <span class="badge badge-orange">Preview placa</span>
           </div>
         </div>
       </div>
@@ -2055,15 +2123,16 @@
             <div class="timeline-header">
               <span class="timeline-title">Sprint 2 — Real-time Core</span>
               <span class="sprint-duration">4-5 dias</span>
-              <span class="sprint-status status-progress">⟳ Em progresso</span>
+              <span class="sprint-status status-done">✓ Done</span>
             </div>
             <div class="sprint-tasks">
               <div class="sprint-task"><div class="sprint-task-check">✓</div>Fluxo de entrada/saída de veículos + atribuição de vaga</div>
               <div class="sprint-task"><div class="sprint-task-check">✓</div>Socket.io Gateway com rooms por estacionamento</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Scaffold do app mobile com Expo Router</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Tela Home com mapa SVG básico</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Tela Meu Carro com countdown</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Integração WebSocket no app</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Scaffold do app mobile com Expo Router</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Tela Home com mapa SVG + seletor de andar</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Tela Meu Carro com countdown e sessão ativa</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Integração WebSocket no app (vaga_ocupada / vaga_livre)</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Módulo de notificações (CRUD + marcar como lida)</div>
             </div>
           </div>
         </div>
@@ -2074,13 +2143,13 @@
             <div class="timeline-header">
               <span class="timeline-title">Sprint 3 — Pathfinding</span>
               <span class="sprint-duration">3-4 dias</span>
-              <span class="sprint-status status-todo">○ Pendente</span>
+              <span class="sprint-status status-done">✓ Done</span>
             </div>
             <div class="sprint-tasks">
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Mapa SVG interativo por andar</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Algoritmo BFS para rota entrada → vaga</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Animação da rota com CSS transitions</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Seletor de andar no mapa</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Mapa SVG interativo por andar</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Algoritmo BFS para rota entrada → vaga</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Animação da rota com overlay SVG animado</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Seletor de andar no mapa</div>
               <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Testes unitários para BFS (Jest)</div>
             </div>
           </div>
@@ -2092,14 +2161,15 @@
             <div class="timeline-header">
               <span class="timeline-title">Sprint 4 — Notificações</span>
               <span class="sprint-duration">2-3 dias</span>
-              <span class="sprint-status status-todo">○ Pendente</span>
+              <span class="sprint-status status-progress">⟳ Em progresso</span>
             </div>
             <div class="sprint-tasks">
               <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Expo Notifications — registro de push tokens</div>
               <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Jobs BullMQ para agendamento de alertas</div>
               <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Worker de envio de push notifications</div>
               <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Geolocalização — alerta de proximidade 200m</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Evento WebSocket <span class="inline-code" style="font-size:0.75em">session_expiring</span></div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Evento WebSocket <span class="inline-code" style="font-size:0.75em">sessao_expirando</span></div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>API REST de notificações (listar, marcar lida)</div>
             </div>
           </div>
         </div>
@@ -2110,15 +2180,15 @@
             <div class="timeline-header">
               <span class="timeline-title">Sprint 5 — Pagamentos</span>
               <span class="sprint-duration">3-4 dias</span>
-              <span class="sprint-status status-todo">○ Pendente</span>
+              <span class="sprint-status status-done">✓ Done</span>
             </div>
             <div class="sprint-tasks">
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Integração MercadoPago SDK — Pix e cartão</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Cálculo dinâmico de tarifa (mínimo 1h)</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Precificação dinâmica +20% quando ocup. &gt; 80%</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Webhook de confirmação + liberação de vaga</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Tela de pagamento no mobile</div>
-              <div class="sprint-task"><div class="sprint-task-check" style="border-color:var(--border-light)"></div>Property-based tests com fast-check</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Integração MercadoPago SDK — Pix e cartão (sandbox)</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Cálculo dinâmico de tarifa (mínimo 1h)</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Precificação dinâmica +20% quando ocup. &gt; 80%</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Webhook de confirmação + liberação de vaga via WebSocket</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Tela de pagamento com QR Code Pix + polling de status</div>
+              <div class="sprint-task"><div class="sprint-task-check">✓</div>Property-based tests com fast-check (fare.utils)</div>
             </div>
           </div>
         </div>
