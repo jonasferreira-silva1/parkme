@@ -20,7 +20,7 @@ services:
       POSTGRES_PASSWORD: parkme123
       POSTGRES_DB: parkme_db
     ports:
-      - "5432:5432"    # Porta local:porta do container
+      - "5433:5432"    # Porta local 5433 → container 5432 (evita conflito com PostgreSQL local)
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persiste dados entre reinicializações
     healthcheck:
