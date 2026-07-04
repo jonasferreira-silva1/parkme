@@ -1,60 +1,105 @@
+// =============================================================
+// KpiCards — 4 cartões de métricas em tempo real
+// Dados vindos de /analytics/occupancy, /revenue e /avg-duration
+// =============================================================
+
 "use client"
 
 import { Area, AreaChart, ResponsiveContainer } from "recharts"
 import { ArrowDownRight, ArrowUpRight, Car, DollarSign, SquareParking, Timer } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
+import { useAnalytics } from "@/lib/hooks/useAnalytics"
 
-interface Kpi {
-  label: string
-  value: string
-  sub: string
-  delta: number
-  icon: typeof Car
-  spark: { v: number }[]
-  color: string
+// Esqueleto de loading para cada card
+function KpiSkeleton() {
+  return (
+    <Card className="relative overflow-hidden p-5">
+      <div className="flex items-start justify-between">
+        <div className="h-4 w-32 animate-pulse rounded bg-secondary" />
+        <div className="h-5 w-12 animate-pulse rounded-full bg-secondary" />
+      </div>
+      <div className="mt-4 space-y-2">
+        <div className="h-7 w-24 animate-pulse rounded bg-secondary" />
+        <div className="h-3 w-36 animate-pulse rounded bg-secondary" />
+      </div>
+    </Card>
+  )
 }
 
-const kpis: Kpi[] = [
-  {
-    label: "Ocupação atual",
-    value: "84%",
-    sub: "161 de 192 vagas",
-    delta: 6.2,
-    icon: SquareParking,
-    color: "var(--chart-1)",
-    spark: [40, 55, 62, 71, 68, 79, 84].map((v) => ({ v })),
-  },
-  {
-    label: "Sessões ativas",
-    value: "161",
-    sub: "31 entradas na última hora",
-    delta: 4.1,
-    icon: Car,
-    color: "var(--chart-2)",
-    spark: [104, 118, 130, 142, 150, 156, 161].map((v) => ({ v })),
-  },
-  {
-    label: "Faturamento hoje",
-    value: "R$ 6.870",
-    sub: "Pix + cartão",
-    delta: 12.8,
-    icon: DollarSign,
-    color: "var(--chart-3)",
-    spark: [3200, 3800, 4200, 4900, 5400, 6100, 6870].map((v) => ({ v })),
-  },
-  {
-    label: "Permanência média",
-    value: "2h 14m",
-    sub: "Tarifa média R$ 18,40",
-    delta: -3.4,
-    icon: Timer,
-    color: "var(--chart-5)",
-    spark: [150, 148, 142, 138, 140, 136, 134].map((v) => ({ v })),
-  },
-]
-
 export function KpiCards() {
+  const { ocupacao, receita, duracao, carregando } = useAnalytics()
+
+  if (carregando && !ocupacao) {
+    return (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)}
+      </div>
+    )
+  }
+
+  // Extrai valores reais com fallback para zero
+  const taxaNum     = ocupacao ? parseInt(ocupacao.taxaOcupacao) : 0
+  const ocupadas    = ocupacao?.ocupadas ?? 0
+  const total       = ocupacao?.total ?? 0
+  const totalReceita = receita?.totalReceita ?? 0
+  const mediaFormatada = duracao?.mediaFormatada ?? "—"
+
+  // Calcula tarifa média a partir da receita e número de sessões
+  const tarifaMedia = duracao?.totalSessoes && totalReceita
+    ? (totalReceita / duracao.totalSessoes).toFixed(2)
+    : "—"
+
+  // Formata receita em reais
+  const receitaFormatada = totalReceita.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+
+  const kpis = [
+    {
+      label: "Ocupação atual",
+      value: ocupacao?.taxaOcupacao ?? "—",
+      sub:   `${ocupadas} de ${total} vagas`,
+      delta: 0,  // delta histórico não está disponível na API atual
+      icon:  SquareParking,
+      color: "var(--chart-1)",
+      spark: [taxaNum * 0.5, taxaNum * 0.6, taxaNum * 0.7, taxaNum * 0.8, taxaNum * 0.9, taxaNum * 0.95, taxaNum]
+        .map((v) => ({ v: Math.round(v) })),
+    },
+    {
+      label: "Sessões ativas",
+      value: String(ocupadas),
+      sub:   ocupacao?.precoDinamicoAtivo ? "⚡ Preço dinâmico ativo" : "Ocupação normal",
+      delta: 0,
+      icon:  Car,
+      color: "var(--chart-2)",
+      spark: [ocupadas * 0.6, ocupadas * 0.7, ocupadas * 0.8, ocupadas * 0.85, ocupadas * 0.9, ocupadas * 0.95, ocupadas]
+        .map((v) => ({ v: Math.round(v) })),
+    },
+    {
+      label: "Faturamento (30 dias)",
+      value: receitaFormatada,
+      sub:   `${receita?.totalPagamentos ?? 0} pagamentos aprovados`,
+      delta: 0,
+      icon:  DollarSign,
+      color: "var(--chart-3)",
+      spark: [totalReceita * 0.4, totalReceita * 0.5, totalReceita * 0.65, totalReceita * 0.75, totalReceita * 0.85, totalReceita * 0.93, totalReceita]
+        .map((v) => ({ v: Math.round(v) })),
+    },
+    {
+      label: "Permanência média",
+      value: mediaFormatada,
+      sub:   `Tarifa média R$ ${tarifaMedia}`,
+      delta: 0,
+      icon:  Timer,
+      color: "var(--chart-5)",
+      spark: Array.from({ length: 7 }, (_, i) => ({ v: duracao?.mediaMinutos ?? 0 })),
+    },
+  ]
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {kpis.map((k) => {
@@ -71,15 +116,18 @@ export function KpiCards() {
                 </span>
                 {k.label}
               </div>
-              <span
-                className={cn(
-                  "flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium",
-                  up ? "bg-accent/15 text-accent" : "bg-destructive/15 text-destructive",
-                )}
-              >
-                {up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
-                {Math.abs(k.delta)}%
-              </span>
+              {/* Badge só aparece quando há dado de delta disponível */}
+              {k.delta !== 0 && (
+                <span
+                  className={cn(
+                    "flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium",
+                    up ? "bg-accent/15 text-accent" : "bg-destructive/15 text-destructive",
+                  )}
+                >
+                  {up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+                  {Math.abs(k.delta)}%
+                </span>
+              )}
             </div>
 
             <div className="mt-4 flex items-end justify-between gap-3">

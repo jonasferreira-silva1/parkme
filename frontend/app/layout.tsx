@@ -14,7 +14,6 @@ export const metadata: Metadata = {
   title: 'ParkMe — Central de Operações',
   description:
     'Painel inteligente de estacionamento ParkMe: ocupação em tempo real, sessões ativas, faturamento e analytics por andar.',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
