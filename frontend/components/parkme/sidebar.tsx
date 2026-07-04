@@ -118,7 +118,11 @@ export function Sidebar() {
           </div>
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-sm font-medium">{usuario?.name ?? "..."}</p>
-            <p className="text-[11px] text-muted-foreground">{labelRole(usuario?.role)}</p>
+            <p className="text-[11px]" style={{
+              color: usuario?.role === "ADMIN" ? "#a78bfa" : "var(--muted-foreground)"
+            }}>
+              {labelRole(usuario?.role)}
+            </p>
           </div>
           {/* Botão de logout */}
           <button

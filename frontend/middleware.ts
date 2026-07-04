@@ -1,46 +1,43 @@
 // =============================================================
-// MIDDLEWARE — Proteção de rotas do dashboard
+// MIDDLEWARE — Proteção de rotas
 //
-// Verifica se há um token salvo antes de permitir o acesso.
-// Redireciona para /login se não autenticado.
+// Rotas públicas: /login (operador) e /admin/login (admin)
+// Todas as outras exigem o cookie parkme_auth.
 //
-// Nota: o middleware do Next.js roda no Edge Runtime e não
-// tem acesso ao localStorage. Por isso usamos um cookie
-// "parkme_auth" definido em client-side como sinalização.
-// A validação real do JWT acontece na API a cada request.
+// Regra adicional: /admin/* exige role ADMIN.
+// A verificação de role fina é feita no client via useAuth,
+// já que o middleware Edge Runtime não tem acesso ao JWT completo.
 // =============================================================
 
 import { NextResponse, type NextRequest } from "next/server"
 
-// Rotas públicas — não requerem autenticação
-const ROTAS_PUBLICAS = ["/login"]
+const ROTAS_PUBLICAS = ["/login", "/admin/login"]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Deixa passar rotas públicas e arquivos estáticos
-  const ehPublica = ROTAS_PUBLICAS.some((r) => pathname.startsWith(r))
-  const ehEstatico = pathname.startsWith("/_next") || pathname.startsWith("/favicon")
+  const ehPublica  = ROTAS_PUBLICAS.some((r) => pathname === r || pathname.startsWith(r + "?"))
+  const ehEstatico = pathname.startsWith("/_next") || pathname.startsWith("/favicon") ||
+                     pathname.startsWith("/icon")  || pathname.startsWith("/apple-icon") ||
+                     pathname.startsWith("/placeholder")
 
-  if (ehPublica || ehEstatico) {
-    return NextResponse.next()
-  }
+  if (ehPublica || ehEstatico) return NextResponse.next()
 
-  // Verifica o cookie de sinalização de autenticação
-  // (o client-side define "parkme_auth=1" após login bem-sucedido)
+  // Verifica cookie de autenticação
   const authCookie = request.cookies.get("parkme_auth")
 
   if (!authCookie?.value) {
-    // Salva a URL original para redirecionar após login
-    const loginUrl = new URL("/login", request.url)
-    loginUrl.searchParams.set("redirect", pathname)
-    return NextResponse.redirect(loginUrl)
+    // Rotas admin não autenticadas → login admin
+    const destino = pathname.startsWith("/admin") ? "/admin/login" : "/login"
+    const url = new URL(destino, request.url)
+    url.searchParams.set("redirect", pathname)
+    return NextResponse.redirect(url)
   }
 
   return NextResponse.next()
 }
 
-// Aplica o middleware em todas as rotas exceto API routes e estáticos
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico|icon|apple-icon|placeholder).*)"],
 }
