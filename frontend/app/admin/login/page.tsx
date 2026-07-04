@@ -1,21 +1,22 @@
 // =============================================================
-// LOGIN OPERADOR — Acesso ao dashboard operacional
+// LOGIN ADMIN — Acesso ao painel administrativo
 //
-// Design focado em ação: mapa ao vivo, check-in, sessões.
-// Apenas OPERATOR e ADMIN conseguem acessar.
+// Design sóbrio e corporativo — foco em analytics e gestão.
+// Apenas ADMIN consegue acessar. OPERATOR é redirecionado
+// para o login de operador.
 // =============================================================
 
 "use client"
 
 import { Suspense, useState, type FormEvent } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Eye, EyeOff, Loader2, Radio, Map, Car } from "lucide-react"
+import { Eye, EyeOff, Loader2, ShieldCheck, BarChart3, Users, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-store"
 import api from "@/lib/api"
 import { cn } from "@/lib/utils"
 
-function LoginForm() {
+function AdminLoginForm() {
   const { login } = useAuth()
   const router       = useRouter()
   const searchParams = useSearchParams()
@@ -38,13 +39,21 @@ function LoginForm() {
         password: senha,
       })
 
-      if (data.usuario.role === "DRIVER") {
-        setErro("Acesso restrito a operadores.")
+      // Apenas ADMIN acessa este painel
+      if (data.usuario.role !== "ADMIN") {
+        setErro(
+          data.usuario.role === "OPERATOR"
+            ? "Este acesso é exclusivo para administradores. Use o login de operador."
+            : "Acesso restrito a administradores."
+        )
         return
       }
 
       login(data.usuario, data.accessToken, data.refreshToken)
-      router.replace(searchParams.get("redirect") ?? "/")
+
+      // Admin vai para /admin após login
+      const redirect = searchParams.get("redirect") ?? "/admin"
+      router.replace(redirect)
     } catch (e: any) {
       const msg = e.response?.data?.message
       setErro(Array.isArray(msg) ? msg[0] : (msg ?? "Credenciais inválidas"))
@@ -59,12 +68,12 @@ function LoginForm() {
         <label className="text-sm font-medium text-foreground">E-mail</label>
         <input
           type="email" autoComplete="email"
-          placeholder="operador@parkme.com"
+          placeholder="admin@parkme.com"
           value={email}
           onChange={(e) => { setEmail(e.target.value); setErro("") }}
           className={cn(
             "flex h-10 w-full rounded-lg border bg-background/60 px-3 py-2 text-sm outline-none",
-            "placeholder:text-muted-foreground focus:border-primary transition-colors",
+            "placeholder:text-muted-foreground focus:border-purple-500 transition-colors",
             erro ? "border-destructive" : "border-input",
           )}
         />
@@ -73,7 +82,7 @@ function LoginForm() {
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-foreground">Senha</label>
         <div className={cn(
-          "flex items-center rounded-lg border bg-background/60 transition-colors focus-within:border-primary",
+          "flex items-center rounded-lg border bg-background/60 transition-colors focus-within:border-purple-500",
           erro ? "border-destructive" : "border-input",
         )}>
           <input
@@ -97,10 +106,14 @@ function LoginForm() {
         </p>
       )}
 
-      <Button type="submit" className="w-full h-10 text-sm font-semibold" disabled={carregando}>
+      <Button
+        type="submit"
+        className="w-full h-10 text-sm font-semibold bg-purple-600 hover:bg-purple-700 text-white"
+        disabled={carregando}
+      >
         {carregando
-          ? <><Loader2 className="mr-2 size-4 animate-spin" />Entrando...</>
-          : "Entrar no painel"
+          ? <><Loader2 className="mr-2 size-4 animate-spin" />Verificando...</>
+          : "Acessar painel admin"
         }
       </Button>
 
@@ -108,64 +121,57 @@ function LoginForm() {
       {process.env.NODE_ENV === "development" && (
         <div className="rounded-lg border border-border bg-secondary/40 p-3 space-y-1.5">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            🧪 Contas de teste
+            🧪 Conta de teste
           </p>
-          {[
-            { label: "Operador", email: "operador@parkme.com" },
-            { label: "Admin",    email: "admin@parkme.com"    },
-          ].map((c) => (
-            <button key={c.email} type="button"
-              onClick={() => { setEmail(c.email); setSenha("Senha@123") }}
-              className="block w-full text-left text-xs text-primary hover:underline">
-              {c.label}: {c.email}
-            </button>
-          ))}
+          <button type="button"
+            onClick={() => { setEmail("admin@parkme.com"); setSenha("Senha@123") }}
+            className="block w-full text-left text-xs text-purple-400 hover:underline">
+            Admin: admin@parkme.com
+          </button>
         </div>
       )}
     </form>
   )
 }
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   return (
     <div className="flex min-h-svh bg-background">
 
-      {/* Painel esquerdo — identidade visual */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center gap-8 bg-sidebar border-r border-sidebar-border p-12">
+      {/* Painel esquerdo — identidade corporativa */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center gap-8 p-12"
+        style={{ background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%)" }}>
+
         <div className="flex flex-col items-center gap-4 text-center">
-          {/* Logo */}
-          <div className="flex size-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-            <Radio className="size-8" />
+          <div className="flex size-16 items-center justify-center rounded-2xl bg-purple-500/20 border border-purple-400/30 shadow-lg">
+            <ShieldCheck className="size-8 text-purple-300" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">ParkMe</h1>
-            <p className="text-muted-foreground mt-1">Central de Operações</p>
+            <h1 className="text-3xl font-bold tracking-tight text-white">ParkMe Admin</h1>
+            <p className="text-purple-300 mt-1">Painel Administrativo</p>
           </div>
         </div>
 
-        {/* Features do painel operacional */}
+        {/* Features do painel admin */}
         <div className="w-full max-w-xs space-y-3">
           {[
-            { icone: Map,   texto: "Mapa de vagas ao vivo via WebSocket" },
-            { icone: Car,   texto: "Registro de entrada e saída de veículos" },
-            { icone: Radio, texto: "Sessões ativas e histórico de pagamentos" },
+            { icone: BarChart3, texto: "Analytics completo e relatórios financeiros"  },
+            { icone: Users,     texto: "Gestão de usuários, motoristas e operadores"  },
+            { icone: Settings,  texto: "Configurações do sistema e precificação"       },
           ].map(({ icone: Icone, texto }) => (
-            <div key={texto} className="flex items-center gap-3 rounded-lg border border-sidebar-border bg-background/40 px-4 py-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
+            <div key={texto} className="flex items-center gap-3 rounded-lg border border-purple-400/20 bg-white/5 px-4 py-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-purple-500/20 text-purple-300">
                 <Icone className="size-4" />
               </div>
-              <p className="text-sm text-muted-foreground">{texto}</p>
+              <p className="text-sm text-purple-200/80">{texto}</p>
             </div>
           ))}
         </div>
 
-        {/* Badge ao vivo */}
-        <div className="flex items-center gap-2 rounded-full border border-chart-2/30 bg-chart-2/10 px-4 py-2 text-xs font-medium text-chart-2">
-          <span className="relative flex size-2">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-chart-2 opacity-60" />
-            <span className="relative inline-flex size-2 rounded-full bg-chart-2" />
-          </span>
-          Atualização em tempo real
+        {/* Aviso de acesso restrito */}
+        <div className="flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-500/10 px-4 py-2 text-xs font-medium text-purple-300">
+          <ShieldCheck className="size-3.5" />
+          Acesso exclusivo para administradores
         </div>
       </div>
 
@@ -175,31 +181,31 @@ export default function LoginPage() {
 
           {/* Header mobile */}
           <div className="flex flex-col items-center gap-3 lg:hidden">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-              <Radio className="size-7" />
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-purple-600 text-white">
+              <ShieldCheck className="size-7" />
             </div>
             <div className="text-center">
-              <h1 className="text-2xl font-bold tracking-tight">ParkMe</h1>
-              <p className="text-sm text-muted-foreground">Central de Operações</p>
+              <h1 className="text-2xl font-bold tracking-tight">ParkMe Admin</h1>
+              <p className="text-sm text-muted-foreground">Painel Administrativo</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold tracking-tight">Acesso do operador</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Acesso administrativo</h2>
             <p className="text-sm text-muted-foreground">
-              Entre com suas credenciais para acessar o painel.
+              Área restrita. Apenas administradores do sistema.
             </p>
           </div>
 
           <Suspense fallback={<div className="h-48 animate-pulse rounded-lg bg-secondary" />}>
-            <LoginForm />
+            <AdminLoginForm />
           </Suspense>
 
-          {/* Link para o admin */}
+          {/* Link para o operador */}
           <p className="text-center text-xs text-muted-foreground">
-            É administrador?{" "}
-            <a href="/admin/login" className="text-primary hover:underline font-medium">
-              Acessar painel admin
+            É operador?{" "}
+            <a href="/login" className="text-primary hover:underline font-medium">
+              Acessar painel operacional
             </a>
           </p>
         </div>
