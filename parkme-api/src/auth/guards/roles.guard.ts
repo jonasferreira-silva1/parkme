@@ -4,7 +4,12 @@
 // Exemplo: @UseGuards(JwtAuthGuard, RolesGuard) + @Roles('ADMIN')
 // =============================================================
 
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 // Nome da chave usada para guardar os roles nos metadados
@@ -16,10 +21,13 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     // Lê os roles definidos com @Roles() no método ou classe
-    const rolesPermitidos = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-      context.getHandler(), // Metadado do método
-      context.getClass(),   // Metadado da classe
-    ]);
+    const rolesPermitidos = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [
+        context.getHandler(), // Metadado do método
+        context.getClass(), // Metadado da classe
+      ],
+    );
 
     // Se não há restrição de role, permite o acesso
     if (!rolesPermitidos || rolesPermitidos.length === 0) {
@@ -34,7 +42,7 @@ export class RolesGuard implements CanActivate {
 
     if (!temPermissao) {
       throw new ForbiddenException(
-        `Acesso negado. Requer papel: ${rolesPermitidos.join(' ou ')}`
+        `Acesso negado. Requer papel: ${rolesPermitidos.join(' ou ')}`,
       );
     }
 

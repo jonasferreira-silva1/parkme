@@ -6,7 +6,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, MinLength, MaxLength, Matches } from 'class-validator';
 
 export class CreateVehicleDto {
-  @ApiProperty({ example: 'ABC1D23', description: 'Placa no formato Mercosul ou antigo' })
+  @ApiProperty({
+    example: 'ABC1D23',
+    description: 'Placa no formato Mercosul ou antigo',
+  })
   @IsString()
   @Matches(/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/, {
     message: 'Placa deve estar no formato ABC1D23 ou ABC1234',

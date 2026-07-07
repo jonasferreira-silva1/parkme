@@ -23,9 +23,6 @@
       },
       "package": "com.parkme.app",
       "permissions": [
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
       ]
     },
@@ -34,20 +31,7 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/notification-icon.png",
-          "color": "#3b82f6"
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "O ParkMe usa sua localização para alertar quando você se afasta do estacionamento."
-        }
-      ]
+      "expo-router"
     ],
     "scheme": "parkme",
     "extra": {

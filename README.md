@@ -20,6 +20,7 @@
 Sis-estac/
 ├── parkme-api/          ← Backend NestJS (API REST + WebSocket)
 ├── parkme-mobile/       ← App React Native + Expo
+├── frontend/            ← Dashboard Web Next.js (Admin/Operador)
 ├── docs/
 │   └── index.html       ← Documentação interativa (abrir no navegador)
 ├── setup.ps1            ← Script de setup automático (Windows)

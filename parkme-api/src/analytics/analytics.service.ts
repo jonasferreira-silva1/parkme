@@ -30,7 +30,10 @@ export class AnalyticsService {
     ]);
 
     // Formata o resultado por andar
-    const andares: Record<number, { total: number; ocupadas: number; taxa: string }> = {};
+    const andares: Record<
+      number,
+      { total: number; ocupadas: number; taxa: string }
+    > = {};
     for (const item of porAndar) {
       if (!andares[item.floor]) {
         andares[item.floor] = { total: 0, ocupadas: 0, taxa: '0%' };
@@ -42,14 +45,16 @@ export class AnalyticsService {
     }
     for (const andar of Object.keys(andares)) {
       const a = andares[Number(andar)];
-      a.taxa = a.total > 0 ? `${Math.round((a.ocupadas / a.total) * 100)}%` : '0%';
+      a.taxa =
+        a.total > 0 ? `${Math.round((a.ocupadas / a.total) * 100)}%` : '0%';
     }
 
     return {
       total,
       ocupadas,
       livres: total - ocupadas,
-      taxaOcupacao: total > 0 ? `${Math.round((ocupadas / total) * 100)}%` : '0%',
+      taxaOcupacao:
+        total > 0 ? `${Math.round((ocupadas / total) * 100)}%` : '0%',
       precoDinamicoAtivo: total > 0 && ocupadas / total > 0.8,
       porAndar: andares,
     };
@@ -59,7 +64,9 @@ export class AnalyticsService {
   // Receita por período (padrão: últimos 30 dias)
   // -----------------------------------------------------------
   async receita(de?: string, ate?: string) {
-    const dataInicio = de ? new Date(de) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const dataInicio = de
+      ? new Date(de)
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const dataFim = ate ? new Date(ate) : new Date();
 
     const pagamentos = await this.prisma.payment.findMany({
@@ -70,7 +77,10 @@ export class AnalyticsService {
       select: { amount: true, method: true, paidAt: true },
     });
 
-    const totalReceita = pagamentos.reduce((acc, p) => acc + Number(p.amount), 0);
+    const totalReceita = pagamentos.reduce(
+      (acc, p) => acc + Number(p.amount),
+      0,
+    );
 
     // Agrupa por método de pagamento
     const porMetodo = pagamentos.reduce(
@@ -107,13 +117,17 @@ export class AnalyticsService {
       return { totalSessoes: 0, mediaMunutos: 0, mediaFormatada: '0min' };
     }
 
-    const somaMinutos = sessoes.reduce((acc, s) => acc + (s.totalMinutes ?? 0), 0);
+    const somaMinutos = sessoes.reduce(
+      (acc, s) => acc + (s.totalMinutes ?? 0),
+      0,
+    );
     const media = Math.round(somaMinutos / sessoes.length);
 
     // Formata para exibição legível
     const horas = Math.floor(media / 60);
     const minutos = media % 60;
-    const mediaFormatada = horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
+    const mediaFormatada =
+      horas > 0 ? `${horas}h ${minutos}min` : `${minutos}min`;
 
     return {
       totalSessoes: sessoes.length,

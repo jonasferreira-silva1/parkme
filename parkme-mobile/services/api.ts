@@ -11,11 +11,8 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-// URL da API — troque pelo IP da sua máquina quando testar no celular
-// Nunca use "localhost" no celular físico! Use o IP local (ex: 192.168.1.100)
-const API_URL = __DEV__
-  ? 'http://10.0.2.2:3000'   // Android emulador (10.0.2.2 = host da máquina)
-  : 'https://api.parkme.com'; // Produção
+// URL da API obtida dinamicamente da variável de ambiente EXPO_PUBLIC_API_URL
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000';
 
 // Chaves para guardar os tokens no armazenamento seguro do dispositivo
 const CHAVE_ACCESS_TOKEN  = 'parkme_access_token';

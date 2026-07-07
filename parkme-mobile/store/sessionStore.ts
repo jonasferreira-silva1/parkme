@@ -12,6 +12,7 @@ export interface SessaoAtiva {
     floor: number;
     sector: string;
     number: number;
+    type?: string;
     lot: { name: string; pricePerHour: number };
   };
   vehicle: {

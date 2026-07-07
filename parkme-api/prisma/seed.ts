@@ -99,6 +99,7 @@ async function main() {
   // -----------------------------------------------------------
   const estacionamento = await prisma.parkingLot.create({
     data: {
+      id: 'lot_001',
       name: 'ParkMe Shopping Center',
       address: 'Av. Paulista, 1000 - São Paulo/SP',
       floors: 3,

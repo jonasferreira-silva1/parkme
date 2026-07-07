@@ -4,20 +4,27 @@
 // acessar o banco. É um singleton (uma única instância).
 // =============================================================
 
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   // Logger do NestJS para exibir mensagens no console com contexto
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
     super({
       // Nível de log: mostra queries, erros e avisos no ambiente de dev
-      log: process.env.NODE_ENV === 'development'
-        ? ['error', 'warn']
-        : ['error'],
+      log:
+        process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     });
   }
 

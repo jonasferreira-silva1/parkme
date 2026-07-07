@@ -3,7 +3,15 @@
 // =============================================================
 
 import {
-  Controller, Post, Get, Param, Body, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
@@ -35,10 +43,7 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Consultar status do pagamento' })
-  buscar(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string,
-  ) {
+  buscar(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.paymentsService.buscarPagamento(id, userId);
   }
 
@@ -56,8 +61,15 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '[DEV] Confirmar pagamento manualmente sem webhook' })
+  @ApiOperation({
+    summary: '[DEV] Confirmar pagamento manualmente sem webhook',
+  })
   confirmarDev(@Param('id') id: string) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new ForbiddenException(
+        'Este endpoint está disponível apenas no ambiente de desenvolvimento.',
+      );
+    }
     return this.paymentsService.confirmarPagamentoManual(id);
   }
 }

@@ -32,12 +32,16 @@ export class PaymentsService {
   // -----------------------------------------------------------
   // Cria um pagamento para uma sessão concluída
   // -----------------------------------------------------------
-  async criarPagamento(sessionId: string, dto: CreatePaymentDto, userId: string) {
+  async criarPagamento(
+    sessionId: string,
+    dto: CreatePaymentDto,
+    userId: string,
+  ) {
     // Busca a sessão verificando que pertence ao usuário
     const sessao = await this.prisma.session.findFirst({
       where: {
         id: sessionId,
-        status: 'COMPLETED',     // Só paga sessões já encerradas
+        status: 'COMPLETED', // Só paga sessões já encerradas
         vehicle: { userId },
       },
     });
@@ -85,9 +89,14 @@ export class PaymentsService {
 
     // Simulação para desenvolvimento (sandbox)
     const mpPaymentId = `MP_SANDBOX_${Date.now()}`;
-    const pixQrCode = dto.method === 'PIX'
-      ? `00020126580014br.gov.bcb.pix0136${mpPaymentId}5204000053039865802BR5925ParkMe6009SAO PAULO62070503***6304${Math.floor(Math.random() * 9999).toString().padStart(4, '0')}`
-      : null;
+    const pixQrCode =
+      dto.method === 'PIX'
+        ? `00020126580014br.gov.bcb.pix0136${mpPaymentId}5204000053039865802BR5925ParkMe6009SAO PAULO62070503***6304${Math.floor(
+            Math.random() * 9999,
+          )
+            .toString()
+            .padStart(4, '0')}`
+        : null;
 
     // Cria o registro de pagamento no banco
     const pagamento = await this.prisma.payment.upsert({
@@ -109,7 +118,9 @@ export class PaymentsService {
       },
     });
 
-    this.logger.log(`Pagamento criado: R$ ${valor} via ${dto.method} | sessão ${sessionId}`);
+    this.logger.log(
+      `Pagamento criado: R$ ${valor} via ${dto.method} | sessão ${sessionId}`,
+    );
 
     return pagamento;
   }
@@ -163,7 +174,13 @@ export class PaymentsService {
         session: {
           include: {
             spot: {
-              select: { id: true, lotId: true, floor: true, sector: true, number: true },
+              select: {
+                id: true,
+                lotId: true,
+                floor: true,
+                sector: true,
+                number: true,
+              },
             },
           },
         },
@@ -171,7 +188,9 @@ export class PaymentsService {
     });
 
     if (!pagamento) {
-      this.logger.warn(`Webhook: pagamento ${mpPaymentId} não encontrado no banco`);
+      this.logger.warn(
+        `Webhook: pagamento ${mpPaymentId} não encontrado no banco`,
+      );
       return { recebido: true };
     }
 
@@ -198,12 +217,14 @@ export class PaymentsService {
       // Notifica todos os clientes do estacionamento que a vaga foi liberada
       this.gateway.emitirVagaLivre(pagamento.session.spot.lotId, {
         spotId: pagamento.session.spotId,
-        floor:  pagamento.session.spot.floor,
+        floor: pagamento.session.spot.floor,
         sector: pagamento.session.spot.sector,
         number: pagamento.session.spot.number,
       });
 
-      this.logger.log(`✅ Pagamento aprovado! Vaga ${pagamento.session.spotId} liberada`);
+      this.logger.log(
+        `✅ Pagamento aprovado! Vaga ${pagamento.session.spotId} liberada`,
+      );
     }
 
     return { recebido: true };
@@ -220,7 +241,13 @@ export class PaymentsService {
         session: {
           include: {
             spot: {
-              select: { id: true, lotId: true, floor: true, sector: true, number: true },
+              select: {
+                id: true,
+                lotId: true,
+                floor: true,
+                sector: true,
+                number: true,
+              },
             },
           },
         },
@@ -244,7 +271,7 @@ export class PaymentsService {
     // Notifica em tempo real que a vaga foi liberada
     this.gateway.emitirVagaLivre(pagamento.session.spot.lotId, {
       spotId: pagamento.session.spotId,
-      floor:  pagamento.session.spot.floor,
+      floor: pagamento.session.spot.floor,
       sector: pagamento.session.spot.sector,
       number: pagamento.session.spot.number,
     });

@@ -12,7 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 // Formato do payload que fica dentro do token JWT
 export interface JwtPayload {
-  sub: string;  // ID do usuário (sub = subject, padrão JWT)
+  sub: string; // ID do usuário (sub = subject, padrão JWT)
   email: string;
   role: string;
 }

@@ -13,17 +13,22 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, {
     // Suprime logs excessivos de inicialização em produção
-    logger: process.env.NODE_ENV === 'production'
-      ? ['error', 'warn']
-      : ['log', 'error', 'warn', 'debug'],
+    logger:
+      process.env.NODE_ENV === 'production'
+        ? ['error', 'warn']
+        : ['log', 'error', 'warn', 'debug'],
   });
 
   // -----------------------------------------------------------
   // CORS — Permite que o app mobile e o navegador se comuniquem
-  // Em produção, substitua '*' pelo domínio real do app
+  // Em produção, restringe para as origens permitidas via ALLOWED_ORIGINS
   // -----------------------------------------------------------
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : '*';
+
   app.enableCors({
-    origin: '*',
+    origin: process.env.NODE_ENV === 'production' ? allowedOrigins : '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization',
   });
@@ -51,7 +56,7 @@ async function bootstrap() {
     .setTitle('ParkMe API')
     .setDescription(
       '🅿️ Sistema Inteligente de Estacionamento — API REST + WebSocket\n\n' +
-      'Use o botão "Authorize" para inserir o JWT token após fazer login.',
+        'Use o botão "Authorize" para inserir o JWT token após fazer login.',
     )
     .setVersion('1.0.0')
     .addBearerAuth() // Adiciona campo para inserir o JWT no Swagger UI

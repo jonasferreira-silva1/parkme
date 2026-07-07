@@ -12,6 +12,8 @@ export class UpdateSpotStatusDto {
     example: SpotStatus.FREE,
     description: 'Novo status da vaga',
   })
-  @IsEnum(SpotStatus, { message: 'Status inválido. Use: FREE, OCCUPIED ou RESERVED' })
+  @IsEnum(SpotStatus, {
+    message: 'Status inválido. Use: FREE, OCCUPIED ou RESERVED',
+  })
   status: SpotStatus;
 }

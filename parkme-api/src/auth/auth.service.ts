@@ -53,13 +53,23 @@ export class AuthService {
         pcd: dto.pcd ?? false,
       },
       // Retorna apenas os campos necessários (nunca retorna a senha!)
-      select: { id: true, name: true, email: true, role: true, createdAt: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
     });
 
     this.logger.log(`Novo usuário registrado: ${usuario.email}`);
 
     // Gera os tokens para o usuário já fazer login após o registro
-    const tokens = await this.gerarTokens(usuario.id, usuario.email, usuario.role);
+    const tokens = await this.gerarTokens(
+      usuario.id,
+      usuario.email,
+      usuario.role,
+    );
 
     return { usuario, ...tokens };
   }
@@ -74,14 +84,19 @@ export class AuthService {
     });
 
     // Mensagem genérica para não revelar se o e-mail existe
-    const erroCrendenciais = new UnauthorizedException('E-mail ou senha incorretos');
+    const erroCrendenciais = new UnauthorizedException(
+      'E-mail ou senha incorretos',
+    );
 
     if (!usuario) {
       throw erroCrendenciais;
     }
 
     // Compara a senha enviada com o hash salvo no banco
-    const senhaCorreta = await bcrypt.compare(dto.password, usuario.passwordHash);
+    const senhaCorreta = await bcrypt.compare(
+      dto.password,
+      usuario.passwordHash,
+    );
 
     if (!senhaCorreta) {
       throw erroCrendenciais;
@@ -89,7 +104,11 @@ export class AuthService {
 
     this.logger.log(`Login: ${usuario.email}`);
 
-    const tokens = await this.gerarTokens(usuario.id, usuario.email, usuario.role);
+    const tokens = await this.gerarTokens(
+      usuario.id,
+      usuario.email,
+      usuario.role,
+    );
 
     return {
       usuario: {
@@ -119,13 +138,15 @@ export class AuthService {
     // Access token: expira rápido (15 minutos por padrão)
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: (this.configService.get<string>('JWT_EXPIRES_IN') ?? '15m') as any,
+      expiresIn: (this.configService.get<string>('JWT_EXPIRES_IN') ??
+        '15m') as any,
     });
 
     // Refresh token: dura mais (7 dias), usado para renovar o access token
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: (this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ?? '7d') as any,
+      expiresIn: (this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ??
+        '7d') as any,
     });
 
     return { accessToken, refreshToken };

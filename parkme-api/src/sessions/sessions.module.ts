@@ -6,8 +6,8 @@ import { GatewaysModule } from '../gateways/gateways.module';
 
 @Module({
   imports: [
-    SpotsModule,     // Precisa do SpotsService para atribuir vagas
-    GatewaysModule,  // Precisa do ParkingGateway para emitir eventos WebSocket
+    SpotsModule, // Precisa do SpotsService para atribuir vagas
+    GatewaysModule, // Precisa do ParkingGateway para emitir eventos WebSocket
   ],
   controllers: [SessionsController],
   providers: [SessionsService],

@@ -105,9 +105,9 @@ export class NotificationsService {
   }) {
     return this.prisma.notification.create({
       data: {
-        userId:    dados.userId,
-        type:      dados.type,
-        message:   dados.message,
+        userId: dados.userId,
+        type: dados.type,
+        message: dados.message,
         sessionId: dados.sessionId,
       },
     });

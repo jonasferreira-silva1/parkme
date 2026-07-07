@@ -8,10 +8,8 @@
 import { io, Socket } from 'socket.io-client';
 import * as SecureStore from 'expo-secure-store';
 
-// Mesma URL da API (WebSocket usa a mesma porta do HTTP)
-const SOCKET_URL = __DEV__
-  ? 'http://10.0.2.2:3000'
-  : 'https://api.parkme.com';
+// Mesma URL da API obtida dinamicamente da variável de ambiente EXPO_PUBLIC_API_URL
+const SOCKET_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000';
 
 // Instância única do socket (singleton)
 let socket: Socket | null = null;

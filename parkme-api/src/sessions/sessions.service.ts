@@ -38,7 +38,9 @@ export class SessionsService {
     });
 
     if (!veiculo) {
-      throw new ForbiddenException('Veículo não encontrado ou não pertence a você');
+      throw new ForbiddenException(
+        'Veículo não encontrado ou não pertence a você',
+      );
     }
 
     // Verifica se o veículo já tem uma sessão ativa
@@ -93,10 +95,10 @@ export class SessionsService {
 
     // Notifica todos os clientes do estacionamento que a vaga foi ocupada
     this.gateway.emitirVagaOcupada(dto.lotId, {
-      spotId:  vaga.id,
-      floor:   vaga.floor,
-      sector:  vaga.sector,
-      number:  vaga.number,
+      spotId: vaga.id,
+      floor: vaga.floor,
+      sector: vaga.sector,
+      number: vaga.number,
     });
 
     return sessao;
@@ -178,7 +180,9 @@ export class SessionsService {
       include: {
         spot: {
           include: {
-            lot: { select: { name: true, pricePerHour: true, dynamicPricing: true } },
+            lot: {
+              select: { name: true, pricePerHour: true, dynamicPricing: true },
+            },
           },
         },
         vehicle: { select: { plate: true, model: true, color: true } },

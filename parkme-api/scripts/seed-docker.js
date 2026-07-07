@@ -38,7 +38,7 @@ async function main() {
 
   // Estacionamento
   const lot = await prisma.parkingLot.create({
-    data: { name: 'ParkMe Shopping Center', address: 'Av. Paulista, 1000 - São Paulo/SP', floors: 3, totalSpots: 120, pricePerHour: 15.00, dynamicPricing: true },
+    data: { id: 'lot_001', name: 'ParkMe Shopping Center', address: 'Av. Paulista, 1000 - São Paulo/SP', floors: 3, totalSpots: 120, pricePerHour: 15.00, dynamicPricing: true },
   })
 
   // Vagas

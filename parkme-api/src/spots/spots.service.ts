@@ -25,9 +25,9 @@ export class SpotsService {
         ...(andar && { floor: andar }),
       },
       orderBy: [
-        { floor: 'asc' },   // Ordena por andar primeiro
-        { sector: 'asc' },  // Depois por setor
-        { number: 'asc' },  // Depois por número
+        { floor: 'asc' }, // Ordena por andar primeiro
+        { sector: 'asc' }, // Depois por setor
+        { number: 'asc' }, // Depois por número
       ],
     });
   }
@@ -60,10 +60,7 @@ export class SpotsService {
         ...(lotId && { lotId }),
         ...(andar && { floor: andar }),
       },
-      orderBy: [
-        { floor: 'asc' },
-        { number: 'asc' },
-      ],
+      orderBy: [{ floor: 'asc' }, { number: 'asc' }],
     });
   }
 
@@ -87,22 +84,20 @@ export class SpotsService {
   //   2. VIP: vagas VIP primeiro (se usuário for VIP)
   //   3. Padrão: primeira STANDARD livre, andar 1 primeiro
   // -----------------------------------------------------------
-  async atribuirMelhorVaga(
-    lotId: string,
-    userRole: string,
-    userPcd: boolean,
-  ) {
+  async atribuirMelhorVaga(lotId: string, userRole: string, userPcd: boolean) {
     // Busca todas as vagas livres ordenadas por andar e número
     const vagasLivres = await this.prisma.spot.findMany({
       where: { lotId, status: SpotStatus.FREE },
       orderBy: [
-        { floor: 'asc' },   // Prioriza andar mais baixo (mais perto da entrada)
-        { number: 'asc' },  // Menor número dentro do andar
+        { floor: 'asc' }, // Prioriza andar mais baixo (mais perto da entrada)
+        { number: 'asc' }, // Menor número dentro do andar
       ],
     });
 
     if (vagasLivres.length === 0) {
-      throw new NotFoundException('Não há vagas disponíveis neste estacionamento');
+      throw new NotFoundException(
+        'Não há vagas disponíveis neste estacionamento',
+      );
     }
 
     // Prioridade 1: PCD tem prioridade em vagas para deficientes

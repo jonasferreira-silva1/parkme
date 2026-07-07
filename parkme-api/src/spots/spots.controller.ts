@@ -33,13 +33,24 @@ export class SpotsController {
   // GET /spots — Lista todas as vagas (com filtros opcionais)
   @Get()
   @ApiOperation({ summary: 'Listar todas as vagas' })
-  @ApiQuery({ name: 'lotId', required: false, description: 'Filtrar por estacionamento' })
-  @ApiQuery({ name: 'floor', required: false, description: 'Filtrar por andar' })
+  @ApiQuery({
+    name: 'lotId',
+    required: false,
+    description: 'Filtrar por estacionamento',
+  })
+  @ApiQuery({
+    name: 'floor',
+    required: false,
+    description: 'Filtrar por andar',
+  })
   async findAll(
     @Query('lotId') lotId?: string,
     @Query('floor') floor?: string,
   ) {
-    return this.spotsService.findAll(lotId, floor ? parseInt(floor) : undefined);
+    return this.spotsService.findAll(
+      lotId,
+      floor ? parseInt(floor) : undefined,
+    );
   }
 
   // GET /spots/available — Lista só vagas livres
@@ -51,7 +62,10 @@ export class SpotsController {
     @Query('lotId') lotId?: string,
     @Query('floor') floor?: string,
   ) {
-    return this.spotsService.findAvailable(lotId, floor ? parseInt(floor) : undefined);
+    return this.spotsService.findAvailable(
+      lotId,
+      floor ? parseInt(floor) : undefined,
+    );
   }
 
   // GET /spots/:id — Detalhe de uma vaga

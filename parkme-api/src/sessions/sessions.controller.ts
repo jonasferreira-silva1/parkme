@@ -13,7 +13,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { SessionsService } from './sessions.service';
 import { EntryDto } from './dto/entry.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -29,11 +34,10 @@ export class SessionsController {
   // POST /sessions/entry — Registra entrada e atribui vaga
   @Post('entry')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Registrar entrada do veículo — atribui vaga automaticamente' })
-  async entry(
-    @Body() dto: EntryDto,
-    @CurrentUser('id') userId: string,
-  ) {
+  @ApiOperation({
+    summary: 'Registrar entrada do veículo — atribui vaga automaticamente',
+  })
+  async entry(@Body() dto: EntryDto, @CurrentUser('id') userId: string) {
     return this.sessionsService.registrarEntrada(dto, userId);
   }
 

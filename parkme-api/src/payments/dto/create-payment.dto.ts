@@ -12,6 +12,8 @@ export class CreatePaymentDto {
     example: PaymentMethod.PIX,
     description: 'Método de pagamento: PIX, CREDIT ou DEBIT',
   })
-  @IsEnum(PaymentMethod, { message: 'Método inválido. Use: PIX, CREDIT ou DEBIT' })
+  @IsEnum(PaymentMethod, {
+    message: 'Método inválido. Use: PIX, CREDIT ou DEBIT',
+  })
   method: PaymentMethod;
 }

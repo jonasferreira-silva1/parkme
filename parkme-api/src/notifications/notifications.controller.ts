@@ -32,16 +32,16 @@ export class NotificationsController {
   // GET /notifications — Lista notificações do usuário logado
   @Get()
   @ApiOperation({ summary: 'Listar notificações do usuário (paginado)' })
-  @ApiQuery({ name: 'page',  required: false, example: 1  })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 20 })
   listar(
     @CurrentUser('id') userId: string,
-    @Query('page')  page?: string,
+    @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     return this.notificationsService.listar(
       userId,
-      page  ? parseInt(page)  : 1,
+      page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
     );
   }
@@ -58,10 +58,7 @@ export class NotificationsController {
   @Patch(':id/read')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Marcar uma notificação como lida' })
-  marcarUma(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string,
-  ) {
+  marcarUma(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.notificationsService.marcarComoLida(id, userId);
   }
 }

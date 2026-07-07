@@ -42,15 +42,10 @@ export default function HomeScreen() {
     },
   });
 
-  // Carrega as vagas da API
   const carregarVagas = useCallback(async () => {
     setCarregando(true);
     try {
-      const [resVagas, resLote] = await Promise.all([
-        api.get('/spots', { params: { lotId } }),
-        // Em produção, buscaria os detalhes do lote para saber nº de andares
-      ]);
-
+      const resVagas = await api.get('/spots', { params: { lotId } });
       setVagas(resVagas.data);
 
       // Calcula taxa de ocupação localmente
