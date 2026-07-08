@@ -7,7 +7,9 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
+  Query,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -17,6 +19,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -24,6 +27,8 @@ import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { RolesGuard } from './guards/roles.guard';
+import { Roles } from './decorators/roles.decorator';
 
 // Agrupa as rotas sob a tag "Auth" no Swagger
 @ApiTags('Auth')
@@ -70,5 +75,16 @@ export class AuthController {
   @ApiOperation({ summary: 'Obter dados do usuário autenticado' })
   async me(@CurrentUser() user: any) {
     return user;
+  }
+
+  // GET /auth/users — Lista todos os usuários (apenas OPERATOR e ADMIN)
+  @Get('users')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('OPERATOR', 'ADMIN')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Listar usuários do sistema' })
+  @ApiQuery({ name: 'role', required: false, example: 'DRIVER' })
+  async listUsers(@Query('role') role?: string) {
+    return this.authService.listUsers(role);
   }
 }

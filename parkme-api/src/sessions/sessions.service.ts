@@ -193,18 +193,37 @@ export class SessionsService {
   // -----------------------------------------------------------
   // Histórico paginado de sessões do usuário
   // -----------------------------------------------------------
-  async buscarHistorico(userId: string, pagina = 1, limite = 10) {
+  async buscarHistorico(
+    userId: string,
+    role: string,
+    status?: string,
+    pagina = 1,
+    limite = 10,
+  ) {
     const pular = (pagina - 1) * limite;
+
+    // Apenas DRIVER é restrito aos seus próprios veículos
+    const filtroUser = role === 'DRIVER' ? { vehicle: { userId } } : {};
+
+    // Filtro de status: se explicitamente passado, filtra por ele.
+    // Se omitido: DRIVER vê apenas finalizadas (não ACTIVE), ADMIN/OPERATOR vê tudo.
+    const filtroStatus = status
+      ? { status: status as any }
+      : role === 'DRIVER'
+        ? { status: { not: 'ACTIVE' } }
+        : {};
 
     const [sessoes, total] = await Promise.all([
       this.prisma.session.findMany({
         where: {
-          status: { not: 'ACTIVE' },
-          vehicle: { userId },
+          ...filtroStatus,
+          ...filtroUser,
         },
         include: {
-          spot: { select: { floor: true, sector: true, number: true } },
-          vehicle: { select: { plate: true } },
+          spot: {
+            include: { lot: { select: { name: true, pricePerHour: true } } },
+          },
+          vehicle: { select: { plate: true, model: true, color: true } },
           payment: { select: { status: true, method: true, paidAt: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -212,7 +231,10 @@ export class SessionsService {
         take: limite,
       }),
       this.prisma.session.count({
-        where: { status: { not: 'ACTIVE' }, vehicle: { userId } },
+        where: {
+          ...filtroStatus,
+          ...filtroUser,
+        },
       }),
     ]);
 

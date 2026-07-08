@@ -55,7 +55,9 @@ describe('PaymentsController', () => {
       const result = await controller.confirmarDev('payment_123');
 
       expect(result).toEqual({ success: true });
-      expect(service.confirmarPagamentoManual).toHaveBeenCalledWith('payment_123');
+      expect(service.confirmarPagamentoManual).toHaveBeenCalledWith(
+        'payment_123',
+      );
     });
 
     it('should proceed and call service if NODE_ENV is undefined/other than production', async () => {
@@ -64,7 +66,9 @@ describe('PaymentsController', () => {
       const result = await controller.confirmarDev('payment_123');
 
       expect(result).toEqual({ success: true });
-      expect(service.confirmarPagamentoManual).toHaveBeenCalledWith('payment_123');
+      expect(service.confirmarPagamentoManual).toHaveBeenCalledWith(
+        'payment_123',
+      );
     });
   });
 });

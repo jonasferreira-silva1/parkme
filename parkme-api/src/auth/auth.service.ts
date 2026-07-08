@@ -151,4 +151,27 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
+  // -----------------------------------------------------------
+  // Lista todos os usuários do sistema com filtros opcionais
+  // -----------------------------------------------------------
+  async listUsers(role?: string) {
+    return this.prisma.user.findMany({
+      where: {
+        ...(role && { role: role as any }),
+      },
+      include: {
+        vehicles: {
+          select: {
+            id: true,
+            plate: true,
+            brand: true,
+            model: true,
+            color: true,
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
 }

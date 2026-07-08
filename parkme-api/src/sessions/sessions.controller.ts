@@ -50,16 +50,21 @@ export class SessionsController {
 
   // GET /sessions/history — Histórico de sessões
   @Get('history')
-  @ApiOperation({ summary: 'Histórico de sessões do usuário (paginado)' })
+  @ApiOperation({ summary: 'Histórico de sessões (paginado)' })
   @ApiQuery({ name: 'page', required: false, example: 1 })
   @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({ name: 'status', required: false, example: 'ACTIVE' })
   async history(
     @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('status') status?: string,
   ) {
     return this.sessionsService.buscarHistorico(
       userId,
+      role,
+      status,
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 10,
     );

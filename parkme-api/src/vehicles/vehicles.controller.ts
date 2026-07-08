@@ -28,8 +28,11 @@ export class VehiclesController {
 
   @Get()
   @ApiOperation({ summary: 'Listar meus veículos' })
-  findAll(@CurrentUser('id') userId: string) {
-    return this.vehiclesService.findAll(userId);
+  findAll(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: string,
+  ) {
+    return this.vehiclesService.findAll(userId, role);
   }
 
   @Post()

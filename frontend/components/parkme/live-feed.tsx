@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { getSocket, entrarEstacionamento, entrarSalaUsuario } from "@/lib/socket"
 import { useAuth } from "@/lib/auth-store"
+import api from "@/lib/api"
 
 // ID do estacionamento — em produção viria de contexto
 const LOT_ID = "lot_001"
@@ -63,6 +64,39 @@ export function LiveFeed() {
     }
     setEventos((prev) => [novo, ...prev].slice(0, 12))
   }
+
+  // Carrega histórico para popular o feed inicial de eventos
+  useEffect(() => {
+    api.get("/sessions/history", { params: { page: 1, limit: 12 } })
+      .then((res) => {
+        const dados = res.data?.dados ?? []
+        const evts: Evento[] = []
+        dados.forEach((s: any, idx: number) => {
+          const idBase = `evt-init-${idx}-${s.id.slice(-4)}`
+          if (s.status === "ACTIVE") {
+            evts.push({
+              id: idBase,
+              tipo: "vaga_ocupada",
+              titulo: META.vaga_ocupada.titulo,
+              detalhe: `${s.spot.sector}${s.spot.number} · Andar ${s.spot.floor}`,
+              hora: new Date(s.entryAt),
+            })
+          } else if (s.status === "COMPLETED") {
+            evts.push({
+              id: `${idBase}-exit`,
+              tipo: "vaga_livre",
+              titulo: META.vaga_livre.titulo,
+              detalhe: `${s.spot.sector}${s.spot.number} · Andar ${s.spot.floor}`,
+              hora: s.exitAt ? new Date(s.exitAt) : new Date(s.entryAt),
+            })
+          }
+        })
+        // Ordena do mais recente para o mais antigo
+        evts.sort((a, b) => b.hora.getTime() - a.hora.getTime())
+        setEventos(evts.slice(0, 12))
+      })
+      .catch((err) => console.warn("Erro ao iniciar LiveFeed:", err.message))
+  }, [])
 
   useEffect(() => {
     let socket: ReturnType<typeof getSocket>

@@ -23,24 +23,28 @@ export function getSocket(): Socket {
     throw new Error("WebSocket só pode ser usado no browser")
   }
 
-  if (socket?.connected) {
-    return socket
-  }
-
   const token = getAccessToken()
 
-  socket = io(`${WS_URL}/parking`, {
-    auth:       { token },          // JWT enviado no handshake
-    transports: ["websocket"],       // Sem polling — conexão direta
-    reconnection:         true,
-    reconnectionAttempts: 10,
-    reconnectionDelay:    2000,
-  })
+  if (!socket) {
+    socket = io(`${WS_URL}/parking`, {
+      auth:       { token },          // JWT enviado no handshake
+      transports: ["websocket"],       // Sem polling — conexão direta
+      reconnection:         true,
+      reconnectionAttempts: 10,
+      reconnectionDelay:    2000,
+    })
 
-  if (process.env.NODE_ENV === "development") {
-    socket.on("connect",       ()      => console.log("🔌 WS conectado:", socket?.id))
-    socket.on("disconnect",    (r)     => console.log("📴 WS desconectado:", r))
-    socket.on("connect_error", (err)   => console.warn("❌ WS erro:", err.message))
+    if (process.env.NODE_ENV === "development") {
+      socket.on("connect",       ()      => console.log("🔌 WS conectado:", socket?.id))
+      socket.on("disconnect",    (r)     => console.log("📴 WS desconectado:", r))
+      socket.on("connect_error", (err)   => console.warn("❌ WS erro:", err.message))
+    }
+  } else {
+    // Atualiza o token para caso o usuário tenha efetuado login após o carregamento inicial
+    socket.auth = { token }
+    if (socket.disconnected) {
+      socket.connect()
+    }
   }
 
   return socket

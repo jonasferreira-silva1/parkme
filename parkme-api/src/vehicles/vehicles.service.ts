@@ -15,10 +15,11 @@ import { CreateVehicleDto } from './dto/create-vehicle.dto';
 export class VehiclesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Lista todos os veículos do usuário autenticado
-  async findAll(userId: string) {
+  // Lista todos os veículos (filtrado por usuário apenas para DRIVER)
+  async findAll(userId: string, role: string) {
+    const filtroUser = role === 'DRIVER' ? { userId } : {};
     return this.prisma.vehicle.findMany({
-      where: { userId },
+      where: filtroUser,
       orderBy: { createdAt: 'asc' },
     });
   }
