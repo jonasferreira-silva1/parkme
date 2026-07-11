@@ -67,8 +67,8 @@ export class AuthController {
     return this.authService.refresh(user.sub, user.email, user.role);
   }
 
-  // GET /auth/me — Retorna os dados do usuário logado (rota de teste)
-  @Post('me')
+  // GET /auth/me — Retorna os dados do usuário logado
+  @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
