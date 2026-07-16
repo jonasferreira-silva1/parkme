@@ -16,7 +16,7 @@
 
 ## 🖥️ Dashboard Web
 
-![Dashboard ParkMe](./frontend/public/dashboard-preview.png)
+![Dashboard ParkMe](frontend/public/dashboard-preview.png)
 
 > Painel operacional em tempo real — KPIs, mapa de vagas, sessões ativas e analytics por andar.
 

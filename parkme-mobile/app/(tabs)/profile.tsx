@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md, flexDirection: 'row', alignItems: 'center',
   },
   veiculoInfo:   { flex: 1 },
-  veiculoPlaca:  { fontSize: FontSize.base, fontWeight: '800', color: Colors.textPrimary, fontVariant: ['small-caps'] },
+  veiculoPlaca:  { fontSize: FontSize.base, fontWeight: '800', color: Colors.textPrimary, letterSpacing: 1 },
   veiculoDetalhe: { fontSize: FontSize.sm, color: Colors.textSecondary, marginTop: 2 },
   btnRemover:    { padding: Spacing.sm },
   btnRemoverTexto: { fontSize: 18 },

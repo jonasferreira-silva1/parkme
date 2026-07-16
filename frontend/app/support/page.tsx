@@ -22,7 +22,7 @@ export default function SupportPage() {
     <div className="flex min-h-svh bg-background text-foreground">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar titulo="Suporte" subtitulo="Ajuda, documentação e contato com o desenvolvedor" />
+        <Topbar titulo="Sobre o Projeto" subtitulo="Documentação, repositório e contato com o desenvolvedor" />
         <main className="flex-1 p-4 sm:p-6 space-y-6 max-w-3xl">
 
           {/* Card do desenvolvedor */}

@@ -35,8 +35,8 @@ export default function RootLayout() {
 
   return (
     <>
-      {/* Barra de status com estilo escuro */}
-      <StatusBar style="light" backgroundColor={Colors.bgPrimary} />
+      {/* Barra de status */}
+      <StatusBar style="light" />
 
       <Stack
         screenOptions={{

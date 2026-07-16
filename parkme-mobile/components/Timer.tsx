@@ -109,7 +109,6 @@ const styles = StyleSheet.create({
   relogio: {
     fontSize: 40,
     fontWeight: '700',
-    fontVariant: ['tabular-nums'], // Impede "pulo" de layout ao mudar números
     letterSpacing: 2,
   },
   resumo: {

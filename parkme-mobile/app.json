@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#0a0e1a"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.parkme.app"
@@ -31,12 +33,14 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-secure-store"
     ],
     "scheme": "parkme",
     "extra": {
-      "router": { "origin": false },
-      "eas": { "projectId": "seu-project-id-aqui" }
+      "router": {
+        "origin": false
+      }
     }
   }
 }

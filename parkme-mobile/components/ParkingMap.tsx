@@ -100,7 +100,7 @@ export function ParkingMap({ vagas, vagaDestacada, onVagaPress }: Props) {
             y2={(Math.floor(totalLinhas / 2)) * (VAGA_ALTURA + VAGA_MARGEM) + 10}
             stroke={Colors.border}
             strokeWidth={2}
-            strokeDasharray="6,4"
+            strokeDasharray={[6, 4]}
           />
         )}
 
@@ -110,10 +110,18 @@ export function ParkingMap({ vagas, vagaDestacada, onVagaPress }: Props) {
           const cor = corDaVaga(vaga);
 
           return (
-            <G
-              key={vaga.id}
-              onPress={() => onVagaPress?.(vaga)}
-            >
+            <G key={vaga.id}>
+              {/* Área tocável invisível sobre a vaga */}
+              <Rect
+                x={vaga.x}
+                y={vaga.y}
+                width={VAGA_LARGURA}
+                height={VAGA_ALTURA}
+                rx={4}
+                fill="transparent"
+                onPress={() => onVagaPress?.(vaga)}
+              />
+
               {/* Borda de destaque (vaga do usuário) */}
               {estaDestacada && (
                 <Rect
@@ -146,7 +154,7 @@ export function ParkingMap({ vagas, vagaDestacada, onVagaPress }: Props) {
                 textAnchor="middle"
                 fill="#fff"
                 fontSize={vaga.status === 'OCCUPIED' ? 14 : 9}
-                fontWeight="600"
+                fontWeight={600}
               >
                 {labelDaVaga(vaga)}
               </SvgText>

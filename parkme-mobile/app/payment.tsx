@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   },
   copiaColaTextoContainer: { flex: 1 },
   copiaColaLabel: { color: Colors.textMuted, fontSize: FontSize.xs, marginBottom: 2 },
-  copiaColaValor: { color: Colors.textSecondary, fontSize: FontSize.xs, fontFamily: 'monospace' },
+  copiaColaValor: { color: Colors.textSecondary, fontSize: FontSize.xs },
   copiarBtn: {
     backgroundColor: Colors.blue + '22',
     borderRadius: Radius.sm,

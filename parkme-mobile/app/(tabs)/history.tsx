@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md, gap: Spacing.sm,
   },
   cardHeader:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  placa:       { fontSize: FontSize.md, fontWeight: '800', color: Colors.textPrimary, fontVariant: ['small-caps'] },
+  placa:       { fontSize: FontSize.md, fontWeight: '800', color: Colors.textPrimary, letterSpacing: 1 },
   vaga:        { fontSize: FontSize.sm, color: Colors.textSecondary },
   infoRow:     { flexDirection: 'row', gap: Spacing.sm, flexWrap: 'wrap' },
   chip:        { flexDirection: 'row', alignItems: 'center', gap: 4 },

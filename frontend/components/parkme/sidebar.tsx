@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard, SquareParking, Car, CarFront,
   CreditCard, BarChart3, Users, Settings,
-  LifeBuoy, ParkingCircle, LogOut, Bell,
+  Info, ParkingCircle, LogOut, Bell,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-store"
@@ -31,8 +31,8 @@ const navAdmin = [
 ]
 
 const navSistema = [
-  { label: "Configurações", icon: Settings,  href: "/settings" },
-  { label: "Suporte",       icon: LifeBuoy,  href: "/support"  },
+  { label: "Configurações",    icon: Settings, href: "/settings" },
+  { label: "Sobre o Projeto",  icon: Info,     href: "/support"  },
 ]
 
 function labelRole(role?: string) {
