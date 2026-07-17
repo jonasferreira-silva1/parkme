@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator } from 'react-native';
-import { estaAutenticado } from '../services/api';
+import { estaAutenticado } from '../services/token';
 import { Colors } from '../constants/theme';
 
 export default function RootLayout() {

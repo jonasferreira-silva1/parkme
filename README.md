@@ -14,11 +14,22 @@
 
 ---
 
-## 🖥️ Dashboard Web
+## 🖥️ Dashboard Web & 📱 Aplicativo Mobile
 
-![Dashboard ParkMe](frontend/public/dashboard-preview.png)
-
-> Painel operacional em tempo real — KPIs, mapa de vagas, sessões ativas e analytics por andar.
+<table width="100%">
+  <tr>
+    <td width="65%" align="center" valign="top">
+      <img src="frontend/public/dashboard-preview.png" alt="Dashboard Web" width="100%"/>
+      <br/>
+      <sub><b>Dashboard Web</b>: Painel operacional para administradores e operadores com mapa de vagas em tempo real, KPIs e analytics por andar.</sub>
+    </td>
+    <td width="35%" align="center" valign="top">
+      <img src="parkme-mobile/assets/frontapp.jpeg" alt="Aplicativo Mobile" width="100%"/>
+      <br/>
+      <sub><b>Aplicativo Mobile</b>: Autoatendimento para motoristas com mapa SVG interativo, check-in automático, timer de sessão e guia até a vaga.</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -95,7 +106,7 @@ npx expo start
 ```
 Escaneie o QR code com o app **Expo Go** no celular.
 
-> **Celular físico?** Abra `parkme-mobile/services/api.ts` e troque `10.0.2.2` pelo IP local da sua máquina (ex: `192.168.1.100`).
+> 💡 **Celular físico?** Abra `parkme-mobile/.env` e ajuste `EXPO_PUBLIC_API_URL` com o IP local da sua máquina na mesma rede Wi-Fi (ex: `http://192.168.1.100:3000`). Certifique-se de que o backend NestJS também esteja ouvindo em `0.0.0.0` para permitir conexões externas.
 
 ---
 

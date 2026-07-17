@@ -6,7 +6,7 @@
 // =============================================================
 
 import { create } from 'zustand';
-import { salvarTokens, limparTokens } from '../services/api';
+import { salvarTokens, limparTokens } from '../services/token';
 import { desconectarSocket } from '../services/socket';
 
 // Tipo do usuário autenticado

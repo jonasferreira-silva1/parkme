@@ -12,7 +12,7 @@ import {
   ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
-import api, { salvarTokens } from '../../services/api';
+import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import { Colors, Spacing, FontSize, Radius } from '../../constants/theme';
 

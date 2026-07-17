@@ -10,13 +10,17 @@
 
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { router } from 'expo-router';
+import { useAuthStore } from '../store/authStore';
+import {
+  salvarTokens,
+  limparTokens,
+  CHAVE_ACCESS_TOKEN,
+  CHAVE_REFRESH_TOKEN,
+} from './token';
 
 // URL da API obtida dinamicamente da variável de ambiente EXPO_PUBLIC_API_URL
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000';
-
-// Chaves para guardar os tokens no armazenamento seguro do dispositivo
-const CHAVE_ACCESS_TOKEN  = 'parkme_access_token';
-const CHAVE_REFRESH_TOKEN = 'parkme_refresh_token';
 
 // Cria a instância do Axios com configurações padrão
 const api: AxiosInstance = axios.create({
@@ -47,6 +51,16 @@ api.interceptors.request.use(
 // -----------------------------------------------------------
 // INTERCEPTOR DE RESPONSE — Renova token automaticamente ao receber 401
 // -----------------------------------------------------------
+async function forcarLogout() {
+  await limparTokens();
+  try {
+    await useAuthStore.getState().logout();
+    router.replace('/(auth)/login');
+  } catch (e) {
+    console.error('Erro ao forçar logout:', e);
+  }
+}
+
 let estaRenovandoToken = false; // Evita múltiplas renovações simultâneas
 
 api.interceptors.response.use(
@@ -57,36 +71,42 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const requestOriginal = error.config as any;
 
-    if (error.response?.status === 401 && !requestOriginal._renovacaoTentada) {
-      requestOriginal._renovacaoTentada = true;
+    if (error.response?.status === 401) {
+      if (!requestOriginal._renovacaoTentada) {
+        requestOriginal._renovacaoTentada = true;
 
-      if (!estaRenovandoToken) {
-        estaRenovandoToken = true;
+        if (!estaRenovandoToken) {
+          estaRenovandoToken = true;
 
-        try {
-          const refreshToken = await SecureStore.getItemAsync(CHAVE_REFRESH_TOKEN);
+          try {
+            const refreshToken = await SecureStore.getItemAsync(CHAVE_REFRESH_TOKEN);
 
-          if (refreshToken) {
-            // Chama o endpoint de renovação com o refresh token
-            const resposta = await axios.post(`${API_URL}/auth/refresh`, null, {
-              headers: { Authorization: `Bearer ${refreshToken}` },
-            });
+            if (refreshToken) {
+              // Chama o endpoint de renovação com o refresh token
+              const resposta = await axios.post(`${API_URL}/auth/refresh`, null, {
+                headers: { Authorization: `Bearer ${refreshToken}` },
+              });
 
-            const { accessToken, refreshToken: novoRefreshToken } = resposta.data;
+              const { accessToken, refreshToken: novoRefreshToken } = resposta.data;
 
-            // Salva os novos tokens
-            await salvarTokens(accessToken, novoRefreshToken);
+              // Salva os novos tokens
+              await salvarTokens(accessToken, novoRefreshToken);
 
-            // Repete a requisição original com o novo token
-            requestOriginal.headers.Authorization = `Bearer ${accessToken}`;
-            return api(requestOriginal);
+              // Repete a requisição original com o novo token
+              requestOriginal.headers.Authorization = `Bearer ${accessToken}`;
+              estaRenovandoToken = false;
+              return api(requestOriginal);
+            } else {
+              throw new Error('Sem refresh token');
+            }
+          } catch {
+            estaRenovandoToken = false;
+            await forcarLogout();
           }
-        } catch {
-          // Se não conseguiu renovar, força o logout
-          await limparTokens();
-        } finally {
-          estaRenovandoToken = false;
         }
+      } else {
+        // Se já tentou renovar e deu 401 de novo, o token novo também é inválido
+        await forcarLogout();
       }
     }
 
@@ -94,30 +114,5 @@ api.interceptors.response.use(
   },
 );
 
-// -----------------------------------------------------------
-// FUNÇÕES AUXILIARES — Gerenciar tokens no armazenamento seguro
-// -----------------------------------------------------------
-
-/** Salva os tokens JWT no armazenamento seguro do dispositivo */
-export async function salvarTokens(accessToken: string, refreshToken: string) {
-  await Promise.all([
-    SecureStore.setItemAsync(CHAVE_ACCESS_TOKEN, accessToken),
-    SecureStore.setItemAsync(CHAVE_REFRESH_TOKEN, refreshToken),
-  ]);
-}
-
-/** Remove os tokens (logout) */
-export async function limparTokens() {
-  await Promise.all([
-    SecureStore.deleteItemAsync(CHAVE_ACCESS_TOKEN),
-    SecureStore.deleteItemAsync(CHAVE_REFRESH_TOKEN),
-  ]);
-}
-
-/** Verifica se o usuário está autenticado (tem access token) */
-export async function estaAutenticado(): Promise<boolean> {
-  const token = await SecureStore.getItemAsync(CHAVE_ACCESS_TOKEN);
-  return !!token;
-}
-
 export default api;
+

@@ -82,7 +82,7 @@ async function bootstrap() {
   // Inicia o servidor
   // -----------------------------------------------------------
   const porta = process.env.PORT ?? 3000;
-  await app.listen(porta);
+  await app.listen(porta, '0.0.0.0');
 
   logger.log(`🚀 ParkMe API rodando em: http://localhost:${porta}`);
   logger.log(`📖 Swagger UI em:         http://localhost:${porta}/api`);
