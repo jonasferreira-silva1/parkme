@@ -144,17 +144,17 @@ Resultado esperado: **17 testes passando** (unitários + property-based com fast
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| POST | `/auth/register` | Criar conta |
-| POST | `/auth/login` | Login → retorna JWT |
-| GET | `/spots?lotId=` | Listar todas as vagas |
-| GET | `/spots/available` | Vagas livres |
-| POST | `/sessions/entry` | Registrar entrada → atribui vaga |
-| POST | `/sessions/:id/exit` | Registrar saída → calcula tarifa |
-| GET | `/sessions/active` | Sessão ativa do usuário |
-| GET | `/sessions/history` | Histórico paginado |
-| POST | `/payments/:sessionId` | Criar pagamento (Pix/cartão) |
-| POST | `/payments/:id/confirm-dev` | Confirmar pagamento (só DEV) |
-| GET | `/analytics/occupancy` | Ocupação atual por andar |
+| `POST` | `/auth/register` | Criar conta |
+| `POST` | `/auth/login` | Login → retorna JWT |
+| `GET`  | `/spots?lotId=` | Listar todas as vagas |
+| `GET`  | `/spots/available` | Vagas livres |
+| `POST` | `/sessions/entry` | Registrar entrada → atribui vaga |
+| `POST` | `/sessions/:id/exit` | Registrar saída → calcula tarifa |
+| `GET`  | `/sessions/active` | Sessão ativa do usuário |
+| `GET`  | `/sessions/history` | Histórico paginado |
+| `POST` | `/payments/:sessionId` | Criar pagamento (Pix/cartão) |
+| `POST` | `/payments/:id/confirm-dev` | Confirmar pagamento (só DEV) |
+| `GET`  | `/analytics/occupancy` | Ocupação atual por andar |
 
 ---
 
@@ -207,8 +207,8 @@ O Prisma v7 mudou significativamente a configuração de datasource, quebrando c
 **Por que Zustand e não Redux?**
 Zustand tem API mais simples, menos boilerplate e performance equivalente para este escopo. A loja é dividida em 3 slices (auth, parking, session) seguindo o princípio de responsabilidade única.
 
-**Por que BFS e não A*?**
-O grid de vagas é pequeno (≤ 120 células por andar) e não tem pesos nas arestas. BFS é ótimo para este caso — encontra o menor caminho em grafos não ponderados e é mais simples de manter.
+**Por que `BFS` e não `A*`?**
+O grid de vagas é pequeno (≤ 120 células por andar) e não tem pesos nas arestas. O algoritmo `BFS` é ótimo para este caso — encontra o menor caminho em grafos não ponderados e é mais simples de manter.
 
 ---
 
