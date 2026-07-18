@@ -14,24 +14,21 @@
 
 ---
 
-## 🖥️ Dashboard Web & 📱 Aplicativo Mobile
+## 🖥️ Dashboard Web
 
-<table width="100%">
-  <tr>
-    <td width="65%" align="center" valign="top">
-      <img src="frontend/public/dashboard-preview.png" alt="Dashboard Web" width="100%"/>
-      <br/>
-      <sub><b>Dashboard Web</b>: Painel operacional para administradores e operadores com mapa de vagas em tempo real, KPIs e analytics por andar.</sub>
-    </td>
-    <td width="35%" align="center" valign="top">
-      <img src="parkme-mobile/assets/frontapp.jpeg" alt="Aplicativo Mobile" width="100%"/>
-      <br/>
-      <sub><b>Aplicativo Mobile</b>: Autoatendimento para motoristas com mapa SVG interativo, check-in automático, timer de sessão e guia até a vaga.</sub>
-    </td>
-  </tr>
-</table>
+![Dashboard ParkMe](frontend/public/dashboard-preview.png)
+
+> **Painel operacional em tempo real para administradores e operadores**: Mapa de vagas dinâmico, KPIs de ocupação e faturamento, monitoramento de sessões ativas e gráficos analíticos de desempenho por andar.
 
 ---
+
+## 📱 Aplicativo Mobile
+
+<p align="center">
+  <img src="parkme-mobile/assets/frontapp.jpeg" alt="Aplicativo Mobile" width="320" />
+</p>
+
+> **Autoatendimento em tempo real para motoristas**: Mapa interativo do estacionamento via SVG (com status atualizado dinamicamente via WebSocket), histórico de uso detalhado, check-in automático e direcionamento inteligente até a vaga atribuída.
 
 ## 📁 Estrutura do Projeto
 
