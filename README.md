@@ -25,7 +25,7 @@
 ## 📱 Aplicativo Mobile
 
 <p align="center">
-  <img src="parkme-mobile/assets/frontapp.jpeg" alt="Aplicativo Mobile" width="320" />
+  <img src="parkme-mobile/assets/TelasMobile.jpeg" alt="Aplicativo Mobile" width="600" />
 </p>
 
 > **Autoatendimento em tempo real para motoristas**: Mapa interativo do estacionamento via SVG (com status atualizado dinamicamente via WebSocket), histórico de uso detalhado, check-in automático e direcionamento inteligente até a vaga atribuída.
